@@ -217,6 +217,16 @@ end
 
 SteakChatPlayerData = {}
 
+local function GetClassColor(class)
+        class = strupper(class:gsub(" ", ""))
+
+        if RAID_CLASS_COLORS[class] ~= nil then
+                return RAID_CLASS_COLORS[class].r or 1, RAID_CLASS_COLORS[class].g or 1, RAID_CLASS_COLORS[class].b or 1, RAID_CLASS_COLORS[class].a or 1
+        else
+                return 1, 0, 1, 1
+        end
+end
+
 local function GetNumGroupMembers()
 	local party, raid = GetNumPartyMembers(), GetNumRaidMembers()
 
@@ -309,7 +319,7 @@ local function GetPlayerLink(playerName, lineID)
 			return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format((1 * 255), (1 * 255), (1 * 255), playerName, lineID, playerName)
 		end
 		]]
-		local r, g, b, a = CowmonsterUI.GetClassColor(class)
+		local r, g, b, a = GetClassColor(class)
 		return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format((r * 255), (g * 255), (b * 255), playerName, lineID, playerName)
 	elseif GetNumGroupMembers() > 0 then
 		for i=1,GetNumGroupMembers(),1 do
@@ -318,14 +328,14 @@ local function GetPlayerLink(playerName, lineID)
 				level = UnitLevel("raid"..i)
 				AddPlayerData(playerName, nil, level, class, nil)
 				--return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format(( RAID_CLASS_COLORS[strupper(class)].r * 255), ( RAID_CLASS_COLORS[strupper(class)].g * 255), ( RAID_CLASS_COLORS[strupper(class)].b * 255), playerName, lineID, playerName)
-				local r, g, b, a = CowmonsterUI.GetClassColor(class)
+				local r, g, b, a = GetClassColor(class)
 				return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format(( r * 255), ( g * 255), ( b * 255), playerName, lineID, playerName)
 			elseif UnitExists("party"..i) and UnitName("party"..i) == playerName then
 				class = select(2, UnitClass("party"..i))
 				level = UnitLevel("party"..i)
 				AddPlayerData(playerName, nil, level, class, nil)
 				--return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format(( RAID_CLASS_COLORS[strupper(class)].r * 255), ( RAID_CLASS_COLORS[strupper(class)].g * 255), ( RAID_CLASS_COLORS[strupper(class)].b * 255), playerName, lineID, playerName)
-				local r, g, b, a = CowmonsterUI.GetClassColor(class)
+				local r, g, b, a = GetClassColor(class)
 				return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format(( r * 255), ( g * 255), ( b * 255), playerName, lineID, playerName)
 			end
 		end
@@ -333,7 +343,7 @@ local function GetPlayerLink(playerName, lineID)
 		class = SteakChatPlayerData[playerName].class
 		level = SteakChatPlayerData[playerName].level
 		--return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format(( RAID_CLASS_COLORS[strupper(class)].r * 255), ( RAID_CLASS_COLORS[strupper(class)].g * 255), ( RAID_CLASS_COLORS[strupper(class)].b * 255), playerName, lineID, playerName)
-		local r, g, b, a = CowmonsterUI.GetClassColor(class)
+		local r, g, b, a = GetClassColor(class)
 		return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format(( r * 255), ( g * 255), ( b * 255), playerName, lineID, playerName)
 	else
 		return ("|Hplayer:%s:%s|h%s|h|r"):format(playerName, lineID, playerName)
@@ -471,16 +481,14 @@ local function GetNumGuildMembersTotal()
         return i - 1
 end
 
-local function AddGuildInfo(self, event, msg, ...)
-	local charName = select(1, ...)
-
+local function AddGuildInfo(self, event, msg, sender, ...)
 	local tmp = GetGuildRosterShowOffline()
 	SetGuildRosterShowOffline(false)
 
 	for i=1,GetNumGuildMembers(),1 do
 		local name, rank, _, level, _, _, note, _, online = GetGuildRosterInfo(i)
 
-		if name == charName or charName == name:sub(1, -4) then
+		if name == sender or sender == name:sub(1, -4) then
 			if note ~= "" then
 				msg = ("[|cffffff00%s:%d|r](|cffffff00%s|r) %s"):format(rank, level, note, msg)
 			else
@@ -491,7 +499,7 @@ local function AddGuildInfo(self, event, msg, ...)
 
 	SetGuildRosterShowOffline(tmp)
 
-	return false, msg, ...
+	return false, msg, sender, ...
 end
 
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SAY", AddGuildInfo)
