@@ -539,12 +539,14 @@ function f:UPDATE_CHAT_WINDOWS(self, event, ...)
 		--ChatFrame1EditBoxRight:Hide()
 		--ChatFrame1EditBox:Hide()
 
+                --[[
                 if not ChatFrame1EditBox.bg then
                     ChatFrame1EditBox.bg = ChatFrame1EditBox:CreateTexture(nil, "BACKGROUND")
                     ChatFrame1EditBox.bg:SetAllPoints()
                     ChatFrame1EditBox.bg:SetColorTexture(0, 0, 0, 0.5)
                 end
-        
+                ]]
+                
 		cf:SetFont("Fonts\\ARIALN.TTF", f.FontSize+2, "OUTLINE")
 
 		SetChatWindowAlpha(i, 0.8) -- Set the alpha of the chat window to 80%
