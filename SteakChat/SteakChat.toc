@@ -4,3 +4,4 @@
 ## Author: SoonBeSteak @ Frostmourne
 ## Version: 1.0.3
 Core.lua
+Toast.lua
