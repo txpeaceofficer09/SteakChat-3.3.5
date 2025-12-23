@@ -346,6 +346,7 @@ function f:PLAYER_ENTERING_WORLD(self, event, ...)
 end
 
 function f:PLAYER_LOGIN(self, event, ...)
+	--[[
         if GetChannelName("World") == 0 then JoinChannelByName("World") end
         if GetChannelName("Trade") == 0 then JoinChannelByName("Trade") end
         if GetChannelName("General") == 0 then JoinChannelByName("General") end
@@ -403,7 +404,14 @@ function f:PLAYER_LOGIN(self, event, ...)
         ChatFrame_AddChannel(frame, "World")
         ChatFrame_AddChannel(frame, "Trade")
         ChatFrame_AddChannel(frame, "General")
-        
+	]]
+	local bg = ChatFrame1EditBox:CreateTexture(nil, "BACKGROUND")
+	bg:SetPoint("TOPLEFT", ChatFrame1EditBox, "TOPLEFT", 4, 4)
+	bg:SetPoint("BOTTOMLEFT", ChatFrame1EditBox, "BOTTOMLEFT", 4, -4)
+	bg:SetPoint("TOPRIGHT", ChatFrame1EditBox, "TOPRIGHT", -4, 4)
+	bg:SetPoint("BOTTOMRIGHT", ChatFrame1EditBox, "BOTTOMRIGHT", -4, -4)
+	bg:SetTexture(0, 0, 0, 0.8)
+
 	ChatFrameMenuButton:Hide()
 end
 
@@ -604,5 +612,5 @@ f:RegisterEvent("UPDATE_CHAT_COLOR_NAME_BY_CLASS")
 --f:RegisterEvent("VARIABLES_LOADED")
 --f:RegisterEvent("CHAT_MSG_WHISPER")
 --f:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
---f:RegisterEvent("PLAYER_LOGIN")
+f:RegisterEvent("PLAYER_LOGIN")
 --f:RegisterEvent("ADDON_LOADED")
