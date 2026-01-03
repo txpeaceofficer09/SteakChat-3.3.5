@@ -229,6 +229,27 @@ for i=1,NUM_CHAT_WINDOWS,1 do
 end
 ]]
 
+local function NewAddMessage(frame, text, r, g, b, id)
+	if text then
+		local timestamp = "|cffff8000[" .. date("%H:%M:%S") .. "]|r "
+		text = timestamp .. text
+	end
+	return frame.OldAddMessage(frame, text, r, g, b, id)
+end
+
+for i = 1, NUM_CHAT_WINDOWS, 1 do
+	local frame = _G["ChatFrame"..i]
+	if frame and not frame.OldAddMessage then
+		frame.OldAddMessage = frame.AddMessage
+		frame.AddMessage = NewAddMessage
+	end
+end
+
+if ChatFrame2 then
+	ChatFrame2.OldAddMessage = ChatFrame2.AddMessage
+	ChatFrame2.AddMessage = NewAddMessage
+end
+
 function f.GetClassColor(class)
         class = strupper(class:gsub(" ", ""))
 
@@ -607,6 +628,7 @@ end)
 
 --f:SetScript("OnUpdate", f.OnUpdate)
 
+--[[
 local function AddTimestamp(self, event, msg, ...)
 	-- Format: [HH:MM:SS] in a grey color (|cff808080)
 	-- You can change "%H:%M:%S" to "%I:%M %p" for 12-hour format
@@ -634,6 +656,7 @@ local events = {
 for _, event in ipairs(events) do
 	ChatFrame_AddMessageEventFilter(event, AddTimestamp)
 end
+]]
 
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SAY", f.AddGuildInfo)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_YELL", f.AddGuildInfo)
