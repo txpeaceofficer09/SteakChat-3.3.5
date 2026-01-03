@@ -198,9 +198,13 @@ local ChatEvents = {
 local OriginalDefaultChatFrameAddMessage = DEFAULT_CHAT_FRAME.AddMessage
 
 function DEFAULT_CHAT_FRAME:AddMessage(message, r, g, b, messageID, ...)
-	local currentTime = date("%H:%M:%S")
-	local modifiedMessage = string.format("[%s] %s", currentTime, message)
-	return OriginalDefaultChatFrameAddMessage(self, modifiedMessage, r, g, b, messageID, ...)
+	if message ~= nil then
+		local currentTime = date("%H:%M:%S")
+		local modifiedMessage = string.format("[%s] %s", currentTime, message)
+		return OriginalDefaultChatFrameAddMessage(modifiedMessage, r, g, b, messageID, ...)
+	else
+		return OriginalDefaultChatFrameAddMessage(message, r, g, b, messageID, ...)
+	end
 end
 
 function f.GetClassColor(class)
