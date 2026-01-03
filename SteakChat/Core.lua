@@ -195,17 +195,39 @@ local ChatEvents = {
 	"CHAT_MSG_MONSTER_YELL",
 }
 
-local OriginalDefaultChatFrameAddMessage = DEFAULT_CHAT_FRAME.AddMessage
+--local OriginalDefaultChatFrameAddMessage = DEFAULT_CHAT_FRAME.AddMessage
 
+--[[
 function DEFAULT_CHAT_FRAME:AddMessage(message, r, g, b, messageID, ...)
 	if message ~= nil then
 		local currentTime = date("%H:%M:%S")
 		local modifiedMessage = string.format("[%s] %s", currentTime, message)
-		return OriginalDefaultChatFrameAddMessage(modifiedMessage, r, g, b, messageID, ...)
+		return OriginalDefaultChatFrameAddMessage(self, modifiedMessage, r, g, b, messageID, ...)
 	else
-		return OriginalDefaultChatFrameAddMessage(message, r, g, b, messageID, ...)
+		return OriginalDefaultChatFrameAddMessage(self, message, r, g, b, messageID, ...)
 	end
 end
+]]
+
+--[[
+local origAddMessages = {}
+
+local function AddMessage(self, message, r, g, b, messageID, ...)
+
+end
+
+for i=1,NUM_CHAT_WINDOWS,1 do
+	local cf = _G["ChatFrame"..i]
+
+	origAddMessages[i] = cf.AddMessage
+
+	function cf:AddMessage(message, r, g, b, messageID, ...)
+		local currentTime = date("%H:%M:%S")
+		local modifiedMessage = string.format("[%s] %s", currentTime, message)
+		return OriginalDefaultChatFrameAddMessage(self, modifiedMessage, r, g, b, messageID, ...)		
+	end
+end
+]]
 
 function f.GetClassColor(class)
         class = strupper(class:gsub(" ", ""))
@@ -584,6 +606,34 @@ f:SetScript("OnEvent", function(self, event, ...)
 end)
 
 --f:SetScript("OnUpdate", f.OnUpdate)
+
+local function AddTimestamp(self, event, msg, ...)
+	-- Format: [HH:MM:SS] in a grey color (|cff808080)
+	-- You can change "%H:%M:%S" to "%I:%M %p" for 12-hour format
+	local timestamp = date("|cff808080[%H:%M:%S]|r ")
+	return false, timestamp .. msg, ...
+end
+
+-- List of chat events to apply the timestamp to
+local events = {
+	"CHAT_MSG_SAY",
+	"CHAT_MSG_YELL",
+	"CHAT_MSG_GUILD",
+	"CHAT_MSG_OFFICER",
+	"CHAT_MSG_PARTY",
+	"CHAT_MSG_PARTY_LEADER", 
+	"CHAT_MSG_RAID",
+	"CHAT_MSG_RAID_LEADER",
+	"CHAT_MSG_WHISPER", 
+	"CHAT_MSG_WHISPER_INFORM",
+	"CHAT_MSG_BN_WHISPER", 
+	"CHAT_MSG_BN_WHISPER_INFORM",
+	"CHAT_MSG_CHANNEL"
+}
+
+for _, event in ipairs(events) do
+	ChatFrame_AddMessageEventFilter(event, AddTimestamp)
+end
 
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SAY", f.AddGuildInfo)
 ChatFrame_AddMessageEventFilter("CHAT_MSG_YELL", f.AddGuildInfo)
