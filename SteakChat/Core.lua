@@ -237,6 +237,10 @@ local function NewAddMessage(frame, text, r, g, b, id)
 	return frame.OldAddMessage(frame, text, r, g, b, id)
 end
 
+ChatFrame1.OldAddMessage = ChatFrame1.AddMessage
+ChatFrame1.AddMessage = NewAddMessage
+
+--[[
 for i = 1, NUM_CHAT_WINDOWS, 1 do
 	local frame = _G["ChatFrame"..i]
 	if frame and not frame.OldAddMessage then
@@ -244,11 +248,14 @@ for i = 1, NUM_CHAT_WINDOWS, 1 do
 		frame.AddMessage = NewAddMessage
 	end
 end
+]]
 
+--[[
 if ChatFrame2 then
 	ChatFrame2.OldAddMessage = ChatFrame2.AddMessage
 	ChatFrame2.AddMessage = NewAddMessage
 end
+]]
 
 function f.GetClassColor(class)
         class = strupper(class:gsub(" ", ""))
