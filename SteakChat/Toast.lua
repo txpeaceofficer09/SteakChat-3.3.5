@@ -2,7 +2,7 @@ local f = _G["SteakChatFrame"]
 
 local ToastEvents = {
 	"CHAT_MSG_WHISPER",
-	"CHAT_MSG_WHISPER_INFORM",
+	--"CHAT_MSG_WHISPER_INFORM",
 	"CHAT_MSG_GUILD",
 	"CHAT_MSG_OFFICER",
 	"CHAT_MSG_RAID",
@@ -96,23 +96,16 @@ tf:SetScript("OnEvent", function(self, event, ...)
 		for k,v in pairs(ChatTypeInfo) do
 			ChatTypeInfo[k].colorNameByClass = true
 		end
-	elseif event == "CHAT_MSG_WHISPER" then
-		if self:IsVisible() == nil then
-			_G[self:GetName().."Tab"].alerting = 1
-		end
+	elseif strsub(event, 1, 8) == "CHAT_MSG" then
+		if event == "CHAT_MSG_WHISPER_INFORM" then chanData = "To "..chanData end
 
+		self:AddMessage(("%s: %s"):format(chanData, (text or "")), r, g, b, a)
+	--[[
+	elseif event == "CHAT_MSG_WHISPER" then
 		self:AddMessage(("%s: %s"):format(chanData, (text or "")), r, g, b, a)	
 	elseif event == "CHAT_MSG_WHISPER_INFORM" then
-		if self:IsVisible() == nil then
-			_G[self:GetName().."Tab"].alerting = 1
-		end
-
 		self:AddMessage(("To %s: %s"):format(chanData, (text or "")), r, g, b, a)	
 	elseif event == "CHAT_MSG_CHANNEL" then
-		if self:IsVisible() == nil then
-			_G[self:GetName().."Tab"].alerting = 1
-		end
-
 		self:AddMessage(("%s: %s"):format(chanData, (text or "")), r, g, b, a)			
 
 		--Send who if user is not already in the player list
@@ -120,17 +113,12 @@ tf:SetScript("OnEvent", function(self, event, ...)
 			SendWho(playerName)
 		end
 	else
-		if self:IsVisible() == nil then
-			_G[self:GetName().."Tab"].alerting = 1
-		end
+		--if specialFlags ~= nil then
+		--	msg = msg.."("..specialFlags..")"
+		--end
 
-		--[[
-		if specialFlags ~= nil then
-			msg = msg.."("..specialFlags..")"
-		end
-		]]
-
-		self:AddMessage(("%s: %s"):format(chanData, (text or "")), r, g, b, a)	
+		self:AddMessage(("%s: %s"):format(chanData, (text or "")), r, g, b, a)
+	]]
 	end
 end)
 
