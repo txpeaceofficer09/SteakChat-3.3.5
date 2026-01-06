@@ -1,5 +1,13 @@
 local f = _G["SteakChatFrame"]
 
+local filterList = {
+        "gold",
+        "cheap",
+        "wts",
+        "safe",
+        "usd"
+}
+
 local ToastEvents = {
 	"CHAT_MSG_WHISPER",
 	--"CHAT_MSG_WHISPER_INFORM",
@@ -99,25 +107,21 @@ tf:SetScript("OnEvent", function(self, event, ...)
 	elseif strsub(event, 1, 8) == "CHAT_MSG" then
 		if event == "CHAT_MSG_WHISPER_INFORM" then chanData = "To "..chanData end
 
+		local score = 0
+
+		for _, keyword in pairs(filterList) do
+	                if msg:lower():match("[^%a]" .. keyword .. "[^%a]") or msg:lower():match("^" .. keyword .. "[^%a]") or  msg:lower():match("[^%a]" .. keyword .. "$") or msg:lower() == keyword then
+        	                score = score + 1
+	                end
+		end
+
+		if score >= 3 then return end
+
 		self:AddMessage(("%s: %s"):format(chanData, (text or "")), r, g, b, a)
 	--[[
-	elseif event == "CHAT_MSG_WHISPER" then
-		self:AddMessage(("%s: %s"):format(chanData, (text or "")), r, g, b, a)	
-	elseif event == "CHAT_MSG_WHISPER_INFORM" then
-		self:AddMessage(("To %s: %s"):format(chanData, (text or "")), r, g, b, a)	
-	elseif event == "CHAT_MSG_CHANNEL" then
-		self:AddMessage(("%s: %s"):format(chanData, (text or "")), r, g, b, a)			
-
-		--Send who if user is not already in the player list
-		if SteakChatPlayerData[playerName] == nil then
-			SendWho(playerName)
-		end
-	else
 		--if specialFlags ~= nil then
 		--	msg = msg.."("..specialFlags..")"
 		--end
-
-		self:AddMessage(("%s: %s"):format(chanData, (text or "")), r, g, b, a)
 	]]
 	end
 end)
