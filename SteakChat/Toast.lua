@@ -110,7 +110,7 @@ tf:SetScript("OnEvent", function(self, event, ...)
 		local score = 0
 
 		for _, keyword in pairs(filterList) do
-	                if msg:lower():match("[^%a]" .. keyword .. "[^%a]") or msg:lower():match("^" .. keyword .. "[^%a]") or  msg:lower():match("[^%a]" .. keyword .. "$") or msg:lower() == keyword then
+	                if text:lower():match("[^%a]" .. keyword .. "[^%a]") or text:lower():match("^" .. keyword .. "[^%a]") or  text:lower():match("[^%a]" .. keyword .. "$") or text:lower() == keyword then
         	                score = score + 1
 	                end
 		end

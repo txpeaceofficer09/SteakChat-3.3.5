@@ -590,6 +590,8 @@ function f:UPDATE_CHAT_WINDOWS(self, event, ...)
 		ChatFrame1EditBox:ClearAllPoints()
 		ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1Tab, "BOTTOMLEFT", 0, 4)
 		ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
+		--ChatFrame1EditBox:SetAttribute("ignoreArrows", false)
+		ChatFrame1EditBox:SetAltArrowKeyMode(false)
            
 		--ChatFrame1EditBox:SetBackdrop(nil)
 
