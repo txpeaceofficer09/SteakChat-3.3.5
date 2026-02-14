@@ -397,6 +397,9 @@ end
 function f:PLAYER_ENTERING_WORLD(self, event, ...)
 	ChatFrameMenuButton:SetScript("OnShow", function(self) self:Hide() end)
 	ChatFrameMenuButton:Hide()
+
+	FriendsMicroButton:SetScript("OnShow", function(self) self:Hide() end)
+	FriendsMicroButton:Hide()
 end
 
 function f:PLAYER_LOGIN(self, event, ...)
