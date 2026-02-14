@@ -195,39 +195,26 @@ local ChatEvents = {
 	"CHAT_MSG_MONSTER_YELL",
 }
 
---local OriginalDefaultChatFrameAddMessage = DEFAULT_CHAT_FRAME.AddMessage
-
---[[
-function DEFAULT_CHAT_FRAME:AddMessage(message, r, g, b, messageID, ...)
-	if message ~= nil then
-		local currentTime = date("%H:%M:%S")
-		local modifiedMessage = string.format("[%s] %s", currentTime, message)
-		return OriginalDefaultChatFrameAddMessage(self, modifiedMessage, r, g, b, messageID, ...)
-	else
-		return OriginalDefaultChatFrameAddMessage(self, message, r, g, b, messageID, ...)
-	end
-end
-]]
-
---[[
-local origAddMessages = {}
-
-local function AddMessage(self, message, r, g, b, messageID, ...)
-
-end
-
-for i=1,NUM_CHAT_WINDOWS,1 do
-	local cf = _G["ChatFrame"..i]
-
-	origAddMessages[i] = cf.AddMessage
-
-	function cf:AddMessage(message, r, g, b, messageID, ...)
-		local currentTime = date("%H:%M:%S")
-		local modifiedMessage = string.format("[%s] %s", currentTime, message)
-		return OriginalDefaultChatFrameAddMessage(self, modifiedMessage, r, g, b, messageID, ...)		
-	end
-end
-]]
+local channels = {
+	"CHAT_MSG_SAY",
+	"CHAT_MSG_YELL",
+	"CHAT_MSG_CHANNEL",
+	"CHAT_MSG_RAID",
+	"CHAT_MSG_GUILD",
+	"CHAT_MSG_EMOTE",
+	"CHAT_MSG_TEXT_EMOTE",
+	"CHAT_MSG_GUILD_ACHIEVEMENT",
+	"CHAT_MSG_OFFICER",
+	"CHAT_MSG_GUILD_ITEM_LOOTED",
+	"CHAT_MSG_RAID_LEADER",
+	"CHAT_MSG_RAID_WARNING",
+	"CHAT_MSG_PARTY",
+	"CHAT_MSG_PARTY_LEADER",
+	"CHAT_MSG_INSTANCE_CHAT",
+	"CHAT_MSG_INSTANCE_CHAT_LEADER",
+	"CHAT_MSG_BATTLEGROUND",
+	"CHAT_MSG_BATTLEGROUND_LEADER",
+}
 
 local function NewAddMessage(frame, text, r, g, b, id)
 	if text then
@@ -239,23 +226,6 @@ end
 
 ChatFrame1.OldAddMessage = ChatFrame1.AddMessage
 ChatFrame1.AddMessage = NewAddMessage
-
---[[
-for i = 1, NUM_CHAT_WINDOWS, 1 do
-	local frame = _G["ChatFrame"..i]
-	if frame and not frame.OldAddMessage then
-		frame.OldAddMessage = frame.AddMessage
-		frame.AddMessage = NewAddMessage
-	end
-end
-]]
-
---[[
-if ChatFrame2 then
-	ChatFrame2.OldAddMessage = ChatFrame2.AddMessage
-	ChatFrame2.AddMessage = NewAddMessage
-end
-]]
 
 function f.GetClassColor(class)
         class = strupper(class:gsub(" ", ""))
@@ -290,6 +260,8 @@ function f.AddPlayerData(name, rank, level, class, note)
 end
 
 function f.GetGuildInfoByName(memberName)
+	if GetNumGuildMembers() > 250 then return false end
+
 	local i = 1
 
 	while GetGuildRosterInfo(i) ~= nil do
@@ -306,6 +278,7 @@ end
 
 function f.GetPublicNote(charName)
 	if not IsInGuild() then return end
+	if GetNumGuildMembers() > 250 then return false end
 
 	local i = 1
 
@@ -361,6 +334,7 @@ function f.GetPlayerLink(playerName, lineID)
 end
 
 function f.AddGuildInfo(self, event, msg, sender, ...)
+	if GetNumGuildMembers() > 250 then return end
 	local i = 1
 
 	while GetGuildRosterInfo(i) ~= nil do
@@ -394,7 +368,7 @@ function f.GetChatFrame(name)
         return frame
 end
 
-function f:PLAYER_ENTERING_WORLD(self, event, ...)
+function f:PLAYER_ENTERING_WORLD(self, ...)
 	ChatFrameMenuButton:SetScript("OnShow", function(self) self:Hide() end)
 	ChatFrameMenuButton:Hide()
 
@@ -402,7 +376,7 @@ function f:PLAYER_ENTERING_WORLD(self, event, ...)
 	FriendsMicroButton:Hide()
 end
 
-function f:PLAYER_LOGIN(self, event, ...)
+function f:PLAYER_LOGIN(self, ...)
 	--[[
         if GetChannelName("World") == 0 then JoinChannelByName("World") end
         if GetChannelName("Trade") == 0 then JoinChannelByName("Trade") end
@@ -462,6 +436,13 @@ function f:PLAYER_LOGIN(self, event, ...)
         ChatFrame_AddChannel(frame, "Trade")
         ChatFrame_AddChannel(frame, "General")
 	]]
+
+	if GetNumGuildMembers() > 250 then
+		for _, channel in ipairs(channels) do
+			ChatFrame_AddMessageEventFilter(channel, f.AddGuildInfo)
+		end
+	end
+
 	local bg = ChatFrame1EditBox:CreateTexture(nil, "BACKGROUND")
 	bg:SetPoint("TOPLEFT", ChatFrame1EditBox, "TOPLEFT", 8, -8)
 	bg:SetPoint("BOTTOMLEFT", ChatFrame1EditBox, "BOTTOMLEFT", 8, 8)
@@ -565,7 +546,7 @@ function f:UPDATE_CHAT_COLOR_NAME_BY_CLASS(type, enabled)
         end
 end
 
-function f:UPDATE_CHAT_WINDOWS(self, event, ...)
+function f:UPDATE_CHAT_WINDOWS(self, ...)
 	for i=1,NUM_CHAT_WINDOWS,1 do
 		local cf = _G["ChatFrame"..i]
 		local tab = _G["ChatFrame"..i.."Tab"]
@@ -634,60 +615,11 @@ end
 
 f:SetScript("OnEvent", function(self, event, ...)
 	if self[event] then
-		self[event](event, ...)
+		self[event](...)
+	else
+		print("|cffff8040[SteakChat]:|r unhandled event (|cff00ff00"..event.."|r)")
 	end
 end)
-
---f:SetScript("OnUpdate", f.OnUpdate)
-
---[[
-local function AddTimestamp(self, event, msg, ...)
-	-- Format: [HH:MM:SS] in a grey color (|cff808080)
-	-- You can change "%H:%M:%S" to "%I:%M %p" for 12-hour format
-	local timestamp = date("|cff808080[%H:%M:%S]|r ")
-	return false, timestamp .. msg, ...
-end
-
--- List of chat events to apply the timestamp to
-local events = {
-	"CHAT_MSG_SAY",
-	"CHAT_MSG_YELL",
-	"CHAT_MSG_GUILD",
-	"CHAT_MSG_OFFICER",
-	"CHAT_MSG_PARTY",
-	"CHAT_MSG_PARTY_LEADER", 
-	"CHAT_MSG_RAID",
-	"CHAT_MSG_RAID_LEADER",
-	"CHAT_MSG_WHISPER", 
-	"CHAT_MSG_WHISPER_INFORM",
-	"CHAT_MSG_BN_WHISPER", 
-	"CHAT_MSG_BN_WHISPER_INFORM",
-	"CHAT_MSG_CHANNEL"
-}
-
-for _, event in ipairs(events) do
-	ChatFrame_AddMessageEventFilter(event, AddTimestamp)
-end
-]]
-
-ChatFrame_AddMessageEventFilter("CHAT_MSG_SAY", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_YELL", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_CHANNEL", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_RAID", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_GUILD", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_EMOTE", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_TEXT_EMOTE", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_GUILD_ACHIEVEMENT", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_OFFICER", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_GUILD_ITEM_LOOTED", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_RAID_LEADER", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_RAID_WARNING", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_PARTY", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_PARTY_LEADER", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_INSTANCE_CHAT", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_INSTANCE_CHAT_LEADER", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_BATTLEGROUND", f.AddGuildInfo)
-ChatFrame_AddMessageEventFilter("CHAT_MSG_BATTLEGROUND_LEADER", f.AddGuildInfo)
 
 --[[
 for _, event in ipairs(ChatEvents) do
