@@ -615,7 +615,7 @@ end
 
 f:SetScript("OnEvent", function(self, event, ...)
 	if self[event] then
-		self[event](...)
+		self[event](event, ...)
 	else
 		print("|cffff8040[SteakChat]:|r unhandled event (|cff00ff00"..event.."|r)")
 	end
