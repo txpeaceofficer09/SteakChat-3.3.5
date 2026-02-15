@@ -443,12 +443,48 @@ function f:PLAYER_LOGIN(self, ...)
 		end
 	end
 
+	for i=1,NUM_CHAT_WINDOWS do
+		local cf = _G["ChatFrame"..i]
+		local eb = _G["ChatFrame"..i.."EditBox"]
+
+		cf:SetBackdrop(nil)
+
+		for _, region in pairs({eb:GetRegions()}) do
+			if region:GetName() then region:Hide() end
+		end
+
+		local bg = eb:CreateTexture(nil, "BACKGROUND")
+		bg:SetPoint("TOPLEFT", eb, "TOPLEFT", 8, -8)
+		bg:SetPoint("BOTTOMLEFT", eb, "BOTTOMLEFT", 8, 8)
+		bg:SetPoint("TOPRIGHT", eb, "TOPRIGHT", -8, -8)
+		bg:SetPoint("BOTTOMRIGHT", eb, "BOTTOMRIGHT", -8, 8)
+	end
+
+	--[[
+	ChatFrame1EditBox:SetBackdrop(nil)
+	for index, region in pairs({ChatFrame1EditBox:GetRegions()}) do
+		if region:GetName() then
+			region:Hide()
+		end
+	end
+	]]
+
+	hooksecurefunc("ChatEdit_DeactivateChat", function(editBox)
+		editBox:SetAlpha(0)
+	end)
+
+	hooksecurefunc("ChatEdit_ActivateChat", function(editBox)
+		editBox:SetAlpha(1)
+	end)
+
+	--[[
 	local bg = ChatFrame1EditBox:CreateTexture(nil, "BACKGROUND")
 	bg:SetPoint("TOPLEFT", ChatFrame1EditBox, "TOPLEFT", 8, -8)
 	bg:SetPoint("BOTTOMLEFT", ChatFrame1EditBox, "BOTTOMLEFT", 8, 8)
 	bg:SetPoint("TOPRIGHT", ChatFrame1EditBox, "TOPRIGHT", -8, -8)
 	bg:SetPoint("BOTTOMRIGHT", ChatFrame1EditBox, "BOTTOMRIGHT", -8, 8)
 	bg:SetTexture(0, 0, 0, 0.8)
+	]]
 
 	ChatFrameMenuButton:Hide()
 end
@@ -510,6 +546,7 @@ function f.OnUpdate(self, elapsed)
 
 		for i=1,NUM_CHAT_WINDOWS,1 do
 			local cf = _G["ChatFrame"..i]
+			local eb = _G["ChatFrame"..i.."EditBox"]
 			local tab = _G["ChatFrame"..i.."Tab"]
 
 			if cf:GetName() == "ChatFrame2" then
@@ -529,9 +566,9 @@ function f.OnUpdate(self, elapsed)
 			else
 				tab:SetPoint("LEFT", _G["ChatFrame"..(i-1).."Tab"], "RIGHT", 0, 0)
 			end
-                        
+
 			ChatFrame1EditBox:ClearAllPoints()
-			ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1Tab, "BOTTOMLEFT", 0, 4)
+			ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, 4)
                         --ChatFrame1EditBox:SetPoint("BOTTOMLEFT", ChatFrame1Tab, "TOPLEFT", 0, -4)
 			ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
 		end
@@ -549,6 +586,7 @@ end
 function f:UPDATE_CHAT_WINDOWS(self, ...)
 	for i=1,NUM_CHAT_WINDOWS,1 do
 		local cf = _G["ChatFrame"..i]
+		local eb = _G["ChatFrame"..i.."EditBox"]
 		local tab = _G["ChatFrame"..i.."Tab"]
 
 		cf.defaultLanguage = GetDefaultLanguage()
@@ -571,17 +609,27 @@ function f:UPDATE_CHAT_WINDOWS(self, ...)
 			tab:SetPoint("LEFT", _G["ChatFrame"..(i-1).."Tab"], "RIGHT", 0, 0)
 		end
                 
-		ChatFrame1EditBox:ClearAllPoints()
-		ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1Tab, "BOTTOMLEFT", 0, 4)
-		ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
+		--ChatFrame1EditBox:ClearAllPoints()
+		--ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1Tab, "BOTTOMLEFT", 0, 4)
+		--ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, 4)
+		--ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
 		--ChatFrame1EditBox:SetAttribute("ignoreArrows", false)
-		ChatFrame1EditBox:SetAltArrowKeyMode(false)
-           
+		--ChatFrame1EditBox:SetAltArrowKeyMode(false)
+
 		--ChatFrame1EditBox:SetBackdrop(nil)
+
+		eb:ClearAllPoints()
+		eb:SetPoint("TOPLEFT", cf, "TOPLEFT", 0, 4)
+		eb:SetPoint("TOPRIGHT", cf, "TOPRIGHT", 0, 4)
 
                 ChatFrame1EditBoxLeft:SetTexture(nil)
                 ChatFrame1EditBoxMid:SetTexture(nil)
                 ChatFrame1EditBoxRight:SetTexture(nil)
+
+		_G["ChatFrame"..i.."EditBoxLeft"]:SetTexture(nil)
+		_G["ChatFrame"..i.."EditBoxMid"]:SetTexture(nil)
+		_G["ChatFrame"..i.."EditBoxRight"]:SetTexture(nil)
+
 		--ChatFrame1EditBoxLeft:Hide()
                 --ChatFrame1EditBoxMid:Hide()
 		--ChatFrame1EditBoxRight:Hide()
