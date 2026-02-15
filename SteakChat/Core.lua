@@ -1,6 +1,6 @@
 local f = CreateFrame("Frame", "SteakChatFrame", UIParent)
 
-f.FontSize = 16
+f.FontSize = 14
 
 f.expandedHeight = 600
 f.collapsedHeight = 150
@@ -458,6 +458,8 @@ function f:PLAYER_LOGIN(self, ...)
 		bg:SetPoint("BOTTOMLEFT", eb, "BOTTOMLEFT", 8, 8)
 		bg:SetPoint("TOPRIGHT", eb, "TOPRIGHT", -8, -8)
 		bg:SetPoint("BOTTOMRIGHT", eb, "BOTTOMRIGHT", -8, 8)
+		bg:SetTexture(0, 0, 0, 0.8)
+		eb.bg = bg
 	end
 
 	--[[
@@ -471,10 +473,12 @@ function f:PLAYER_LOGIN(self, ...)
 
 	hooksecurefunc("ChatEdit_DeactivateChat", function(editBox)
 		editBox:SetAlpha(0)
+		editBox.bg:Hide()
 	end)
 
 	hooksecurefunc("ChatEdit_ActivateChat", function(editBox)
 		editBox:SetAlpha(1)
+		editBox.bg:Show()
 	end)
 
 	--[[
@@ -643,7 +647,7 @@ function f:UPDATE_CHAT_WINDOWS(self, ...)
                 end
                 ]]
                 
-		cf:SetFont("Fonts\\ARIALN.TTF", f.FontSize+2, "OUTLINE")
+		cf:SetFont("Fonts\\ARIALN.TTF", f.FontSize, "OUTLINE")
 
 		SetChatWindowAlpha(i, 0.8) -- Set the alpha of the chat window to 80%
 		SetChatWindowColor(i, 0, 0, 0) -- Set the background color of the chat window to black
