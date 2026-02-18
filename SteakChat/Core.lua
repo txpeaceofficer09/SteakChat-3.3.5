@@ -1,11 +1,28 @@
 local f = CreateFrame("Frame", "SteakChatFrame", UIParent)
 
-f.FontSize = 14
-
 f.expandedHeight = 600
 f.collapsedHeight = 150
 
 SteakChatPlayerData = {}
+
+f.fonts = {
+	"Interface\\AddOns\\SteakChat\\Fonts\\Audiowide-Regular.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Geo-Italic.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Geo-Regular.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\JockeyOne-Regular.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Macondo-Regular.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\NovaSquare-Regular.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-Black.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-Bold.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-ExtraBold.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-Medium.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-Regular.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-SemiBold.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-VariableFont_wght.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\PirataOne-Regular.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\StoryScript-Regular.ttf",
+	"Interface\\AddOns\\SteakChat\\Fonts\\UnifrakturCook-Bold.ttf"
+}
 
 f.chatColors = {
 	["CHAT_MSG_MONSTER_SAY"] = {
@@ -460,6 +477,8 @@ function f:PLAYER_LOGIN(self, ...)
 		bg:SetPoint("BOTTOMRIGHT", eb, "BOTTOMRIGHT", -8, 8)
 		bg:SetTexture(0, 0, 0, 0.8)
 		eb.bg = bg
+
+		_G[eb:GetName().."Header"]:SetFont(f.fonts[1], 12, "OUTLINE")
 	end
 
 	--[[
@@ -625,6 +644,7 @@ function f:UPDATE_CHAT_WINDOWS(self, ...)
 		eb:ClearAllPoints()
 		eb:SetPoint("TOPLEFT", cf, "TOPLEFT", 0, 4)
 		eb:SetPoint("TOPRIGHT", cf, "TOPRIGHT", 0, 4)
+		eb:SetFont(f.fonts[1], 12, "OUTLINE")
 
                 ChatFrame1EditBoxLeft:SetTexture(nil)
                 ChatFrame1EditBoxMid:SetTexture(nil)
@@ -647,7 +667,8 @@ function f:UPDATE_CHAT_WINDOWS(self, ...)
                 end
                 ]]
                 
-		cf:SetFont("Fonts\\ARIALN.TTF", f.FontSize, "OUTLINE")
+		--cf:SetFont("Fonts\\ARIALN.TTF", 14, "OUTLINE")
+		cf:SetFont(f.fonts[1], 12, "OUTLINE")
 
 		SetChatWindowAlpha(i, 0.8) -- Set the alpha of the chat window to 80%
 		SetChatWindowColor(i, 0, 0, 0) -- Set the background color of the chat window to black
