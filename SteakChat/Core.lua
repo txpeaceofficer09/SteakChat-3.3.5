@@ -391,6 +391,12 @@ function f:PLAYER_ENTERING_WORLD(self, ...)
 
 	FriendsMicroButton:SetScript("OnShow", function(self) self:Hide() end)
 	FriendsMicroButton:Hide()
+
+	HelpMicroButton:SetParent(UIParent)
+	HelpMicroButton:ClearAllPoints()
+	HelpMicroButton:SetFrameLevel(3)
+	HelpMicroButton:SetFrameStrata("HIGH")
+	HelpMicroButton:SetPoint("BOTTOM", ChatFrame1ButtonFrameUpButton, "TOP", 0, 4)
 end
 
 function f:PLAYER_LOGIN(self, ...)
