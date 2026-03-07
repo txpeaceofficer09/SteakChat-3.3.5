@@ -498,11 +498,29 @@ function f:PLAYER_LOGIN(self, ...)
 
 	hooksecurefunc("ChatEdit_DeactivateChat", function(editBox)
 		editBox:SetAlpha(0)
+		if not editBox.bg then
+			local bg = editBox:CreateTexture(nil, "BACKGROUND")
+			bg:SetPoint("TOPLEFT", eb, "TOPLEFT", 8, -8)
+			bg:SetPoint("BOTTOMLEFT", eb, "BOTTOMLEFT", 8, 8)
+			bg:SetPoint("TOPRIGHT", eb, "TOPRIGHT", -8, -8)
+			bg:SetPoint("BOTTOMRIGHT", eb, "BOTTOMRIGHT", -8, 8)
+			bg:SetTexture(0, 0, 0, 0.8)
+			editBox.bg = bg
+		end
 		editBox.bg:Hide()
 	end)
 
 	hooksecurefunc("ChatEdit_ActivateChat", function(editBox)
 		editBox:SetAlpha(1)
+		if not editBox.bg then
+			local bg = editBox:CreateTexture(nil, "BACKGROUND")
+			bg:SetPoint("TOPLEFT", eb, "TOPLEFT", 8, -8)
+			bg:SetPoint("BOTTOMLEFT", eb, "BOTTOMLEFT", 8, 8)
+			bg:SetPoint("TOPRIGHT", eb, "TOPRIGHT", -8, -8)
+			bg:SetPoint("BOTTOMRIGHT", eb, "BOTTOMRIGHT", -8, 8)
+			bg:SetTexture(0, 0, 0, 0.8)
+			editBox.bg = bg
+		end
 		editBox.bg:Show()
 	end)
 

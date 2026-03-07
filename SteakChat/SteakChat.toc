@@ -4,5 +4,5 @@
 ## Author: SoonBeSteak @ Frostmourne
 ## Version: 1.0.3
 Core.lua
-Toast.lua
-CombatLog.lua
+#Toast.lua
+#CombatLog.lua
