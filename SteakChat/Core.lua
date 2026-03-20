@@ -233,16 +233,12 @@ local channels = {
 	"CHAT_MSG_BATTLEGROUND_LEADER",
 }
 
-local function NewAddMessage(frame, text, r, g, b, id)
-	if text then
-		local timestamp = "|cffff8000[" .. date("%H:%M:%S") .. "]|r "
-		text = timestamp .. text
-	end
-	return frame.OldAddMessage(frame, text, r, g, b, id)
+local origAddMessage = ChatFrame1.AddMessage
+ChatFrame1.AddMessage = function(self, text, ...)
+	local timestamp = date("%H:%M:%S")
+	text = ("|cffff8000[%s]|r %s"):format(timestamp, text or "")
+	return origAddMessage(self, text, ...)
 end
-
-ChatFrame1.OldAddMessage = ChatFrame1.AddMessage
-ChatFrame1.AddMessage = NewAddMessage
 
 function f.GetClassColor(class)
         class = strupper(class:gsub(" ", ""))
@@ -471,9 +467,15 @@ function f:PLAYER_LOGIN(self, ...)
 		local eb = _G["ChatFrame"..i.."EditBox"]
 
 		cf:SetBackdrop(nil)
+		--[[
+		cf:SetBackdrop( { bgFile = nil, edgeFile = "Interface\\Buttons\\WHITE8x8", tile = true, tileSize = 32, edgeSize = 1, insets = { left = 0, right = 0, top = 0, bottom = 0 } } )
+		cf:SetBackdropColor(0.2, 0.2, 0.2, 1)
+		local borderColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
+		cf:SetBackdropBorderColor(borderColor.r or 1, borderColor.g or 0.5, borderColor.b or 0, 1)
+		]]
 
 		for _, region in pairs({eb:GetRegions()}) do
-			if region:GetName() then region:Hide() end
+			if region:GetObjectType() == "Texture" then region:Hide() end
 		end
 
 		local bg = eb:CreateTexture(nil, "BACKGROUND")
@@ -677,21 +679,7 @@ function f:UPDATE_CHAT_WINDOWS(self, ...)
 		_G["ChatFrame"..i.."EditBoxLeft"]:SetTexture(nil)
 		_G["ChatFrame"..i.."EditBoxMid"]:SetTexture(nil)
 		_G["ChatFrame"..i.."EditBoxRight"]:SetTexture(nil)
-
-		--ChatFrame1EditBoxLeft:Hide()
-                --ChatFrame1EditBoxMid:Hide()
-		--ChatFrame1EditBoxRight:Hide()
-		--ChatFrame1EditBox:Hide()
-
-                --[[
-                if not ChatFrame1EditBox.bg then
-                    ChatFrame1EditBox.bg = ChatFrame1EditBox:CreateTexture(nil, "BACKGROUND")
-                    ChatFrame1EditBox.bg:SetAllPoints()
-                    ChatFrame1EditBox.bg:SetColorTexture(0, 0, 0, 0.5)
-                end
-                ]]
-                
-		--cf:SetFont("Fonts\\ARIALN.TTF", 14, "OUTLINE")
+               
 		cf:SetFont(f.fonts[1], 12, "OUTLINE")
 
 		SetChatWindowAlpha(i, 0.8) -- Set the alpha of the chat window to 80%
