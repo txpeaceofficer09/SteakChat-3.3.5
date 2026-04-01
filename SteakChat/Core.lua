@@ -1,7 +1,48 @@
 local f = CreateFrame("Frame", "SteakChatFrame", UIParent)
 
-f.expandedHeight = 600
-f.collapsedHeight = 150
+local _, class = UnitClass("player")
+local borderColor = RAID_CLASS_COLORS[class]
+
+f:SetBackdrop( { bgFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1, insets = { left = 0, right = 0, top = 0, bottom = 0 } } )
+f:SetBackdropColor(0.2, 0.2, 0.2, 1)
+f:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, 1)
+
+f.expandedHeight = GetScreenHeight() * 0.75
+f.collapsedHeight = 217
+
+f:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 1, 20)
+f:SetSize(432, 200)
+
+--[[
+local windowTypes = { "General", "Guild", "Whisper" }
+
+for _, windowType in ipairs(windowTypes) do
+	local cw = CreateFrame("ScrollingMessageFrame", nil, SteakChatFrame)
+
+	cw:SetBackdrop(nil)
+end
+]]
+
+for i=2,10 do
+	local frame = _G["ChatFrame"..i]
+	local tab = _G["ChatFrame"..i.."Tab"]
+
+	if frame then
+		frame:Hide()
+	end
+
+	if tab then
+		tab:Hide()
+	end
+end
+
+ChatFrame1:SetClampedToScreen(false)
+ChatFrame1:ClearAllPoints()
+ChatFrame1:SetPoint("TOPLEFT", SteakChatFrame, 1, -1)
+ChatFrame1:SetPoint("BOTTOMRIGHT", SteakChatFrame, -1, 1)
+ChatFrame1:SetParent(SteakChatFrame)
+ChatFrame1:SetBackdrop(nil)
+ChatFrame1Tab:Hide()
 
 SteakChatPlayerData = {}
 
@@ -286,6 +327,7 @@ function f.GetGuildInfoByName(memberName)
 
 		i = i + 1
 	end
+
 	return false
 end
 
@@ -388,10 +430,10 @@ function f:PLAYER_ENTERING_WORLD(self, ...)
 	FriendsMicroButton:SetScript("OnShow", function(self) self:Hide() end)
 	FriendsMicroButton:Hide()
 
-	HelpMicroButton:SetParent(UIParent)
+	HelpMicroButton:SetParent(ChatFrame1ButtonFrame)
 	HelpMicroButton:ClearAllPoints()
-	HelpMicroButton:SetFrameLevel(3)
-	HelpMicroButton:SetFrameStrata("HIGH")
+	--HelpMicroButton:SetFrameLevel(3)
+	--HelpMicroButton:SetFrameStrata("HIGH")
 	HelpMicroButton:SetPoint("BOTTOM", ChatFrame1ButtonFrameUpButton, "TOP", 0, 4)
 end
 
@@ -539,19 +581,19 @@ function f:PLAYER_LOGIN(self, ...)
 end
 
 function f.OnEnter(self)
-	self.FrameStrata = self:GetFrameStrata()
-	self:SetFrameStrata("HIGH")
-	ChatFrame1.action = "grow"
+	f.FrameStrata = f:GetFrameStrata()
+	f:SetFrameStrata("HIGH")
+	f.action = "grow"
 end
 
 function f.OnLeave(self)
-	self:SetFrameStrata(self.FrameStrata)
-	ChatFrame1.action = "shrink"
+	f:SetFrameStrata(f.FrameStrata)
+	f.action = "shrink"
 end
 
 function f.OnHyperlinkEnter(self, link)
-	ChatFrame1.action = "grow"
-	self:SetFrameStrata("HIGH")
+	f.action = "grow"
+	f:SetFrameStrata("HIGH")
 
 	local type = strmatch(link, "^(.-):")
 	if(type == "item" or type == "enchant" or type == "spell" or type == "quest") then
@@ -571,59 +613,77 @@ function f.OnHyperlinkLeave(self, link)
 	end
 end
 
-function f.OnUpdate(self, elapsed)
-	ChatFrame1.timer = (ChatFrame1.timer or 0) + elapsed
+local function OnUpdate(self, elapsed)
+	self.timer = (self.timer or 0) + elapsed
+	if self.timer < 0.01 then return end
+	self.timer = 0
 
-	if ChatFrame1.timer >= 0.01 then
-		if ChatFrame1.action == "shrink" and ChatFrame1:GetHeight() > f.collapsedHeight then
-			local newHeight = ChatFrame1:GetHeight() - 50
+	--self.expandedHeight = self.expandedHeight or GetScreenHeight() * 0.75
+	--self.collapsedHeight = self.collapsedHeight or 200
 
-			if newHeight < f.collapsedHeight then
-				ChatFrame1:SetHeight(f.collapsedHeight)
-			else
-				ChatFrame1:SetHeight(newHeight)
-			end
-		elseif ChatFrame1.action == "grow" and ChatFrame1:GetHeight() < f.expandedHeight then
-			local newHeight = ChatFrame1:GetHeight() + 50
+	if self.action == "shrink" and self:GetHeight() > self.collapsedHeight then
+		local newHeight = self:GetHeight() - 50
 
-			if newHeight > f.expandedHeight then
-				ChatFrame1:SetHeight(f.expandedHeight)
-			else
-				ChatFrame1:SetHeight(newHeight)
-			end
-		end
+		self:SetHeight(math.max(newHeight, self.collapsedHeight))
+	elseif self.action == "grow" and self:GetHeight() < self.expandedHeight then
+		local newHeight = self:GetHeight() + 50
 
-		for i=1,NUM_CHAT_WINDOWS,1 do
-			local cf = _G["ChatFrame"..i]
-			local eb = _G["ChatFrame"..i.."EditBox"]
-			local tab = _G["ChatFrame"..i.."Tab"]
-
-			if cf:GetName() == "ChatFrame2" then
-				cf:ClearAllPoints()
-				cf:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, -24)
-				cf:SetPoint("TOPRIGHT", ChatFrame1, "TOPRIGHT", 0, -24)
-				cf:SetPoint("BOTTOMLEFT", ChatFrame1, "BOTTOMLEFT", 0, 0)
-				cf:SetPoint("BOTTOMRIGHT", ChatFrame1, "BOTTOMRIGHT", 0, 0)
-			elseif cf:GetName() ~= ChatFrame1:GetName() then
-				cf:ClearAllPoints()
-				cf:SetAllPoints(ChatFrame1)
-			end
-
-			tab:ClearAllPoints()
-			if i == 1 then
-				tab:SetPoint("TOPLEFT", ChatFrame1, "BOTTOMLEFT", 0, 4)
-			else
-				tab:SetPoint("LEFT", _G["ChatFrame"..(i-1).."Tab"], "RIGHT", 0, 0)
-			end
-
-			ChatFrame1EditBox:ClearAllPoints()
-			ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, 4)
-                        --ChatFrame1EditBox:SetPoint("BOTTOMLEFT", ChatFrame1Tab, "TOPLEFT", 0, -4)
-			ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
-		end
-
-		ChatFrame1.timer = 0
+		self:SetHeight(math.min(newHeight, self.expandedHeight))
 	end
+
+	ChatFrame1:SetClampedToScreen(false)
+	ChatFrame1:ClearAllPoints()
+	ChatFrame1:SetPoint("TOPLEFT", SteakChatFrame, "TOPLEFT", 37, -5)
+	ChatFrame1:SetPoint("BOTTOMRIGHT", SteakChatFrame, "BOTTOMRIGHT", -4, 7)
+
+	ChatFrame1EditBox:ClearAllPoints()
+	ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, 4)
+	--ChatFrame1EditBox:SetPoint("BOTTOMLEFT", ChatFrame1Tab, "TOPLEFT", 0, -4)
+	ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
+
+	for i=2,NUM_CHAT_WINDOWS do
+		local cf = _G["ChatFrame"..i]
+		local eb = _G["ChatFrame"..i.."EditBox"]
+		local tab = _G["ChatFrame"..i.."Tab"]
+
+		cf:Hide()
+		tab:Hide()
+
+		eb:ClearAllPoints()
+		eb:SetAllPoints(ChatFrame1EditBox)
+	end
+
+	--[[
+	for i=1,NUM_CHAT_WINDOWS,1 do
+		local cf = _G["ChatFrame"..i]
+		local eb = _G["ChatFrame"..i.."EditBox"]
+		local tab = _G["ChatFrame"..i.."Tab"]
+
+		if cf:GetName() == "ChatFrame2" then
+			cf:ClearAllPoints()
+			cf:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, -24)
+			cf:SetPoint("TOPRIGHT", ChatFrame1, "TOPRIGHT", 0, -24)
+			cf:SetPoint("BOTTOMLEFT", ChatFrame1, "BOTTOMLEFT", 0, 0)
+			cf:SetPoint("BOTTOMRIGHT", ChatFrame1, "BOTTOMRIGHT", 0, 0)
+		elseif cf:GetName() ~= ChatFrame1:GetName() then
+			cf:ClearAllPoints()
+			cf:SetAllPoints(ChatFrame1)
+		end
+
+		tab:ClearAllPoints()
+
+		if i == 1 then
+			tab:SetPoint("TOPLEFT", ChatFrame1, "BOTTOMLEFT", 0, 4)
+		else
+			tab:SetPoint("LEFT", _G["ChatFrame"..(i-1).."Tab"], "RIGHT", 0, 0)
+		end
+
+		ChatFrame1EditBox:ClearAllPoints()
+		ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, 4)
+		--ChatFrame1EditBox:SetPoint("BOTTOMLEFT", ChatFrame1Tab, "TOPLEFT", 0, -4)
+		ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
+	end
+	]]
 end
 
 function f:UPDATE_CHAT_COLOR_NAME_BY_CLASS(type, enabled)
@@ -689,7 +749,7 @@ function f:UPDATE_CHAT_WINDOWS(self, ...)
 		cf:SetScript("OnLeave", f.OnLeave)
 		cf:HookScript("OnHyperlinkEnter", f.OnHyperlinkEnter)
 		cf:HookScript("OnHyperlinkLeave", f.OnHyperlinkLeave)
-		cf:SetScript("OnUpdate", f.OnUpdate)
+		--cf:SetScript("OnUpdate", f.OnUpdate)
 
 		cf:EnableKeyboard(true)
 		cf:EnableMouse(true)
@@ -698,6 +758,8 @@ function f:UPDATE_CHAT_WINDOWS(self, ...)
 	end
 end
 
+
+f:SetScript("OnUpdate", OnUpdate)
 f:SetScript("OnEvent", function(self, event, ...)
 	if self[event] then
 		self[event](event, ...)
