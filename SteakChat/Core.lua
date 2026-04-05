@@ -3,600 +3,103 @@ local f = CreateFrame("Frame", "SteakChatFrame", UIParent)
 local _, class = UnitClass("player")
 local borderColor = RAID_CLASS_COLORS[class]
 
-f:SetBackdrop( { bgFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1, insets = { left = 0, right = 0, top = 0, bottom = 0 } } )
+local bgFile = "Interface\\ChatFrame\\ChatFrameBackground"
+local edgeFile = "Interface\\Buttons\\WHITE8x8"
+
+local expandedHeight = GetScreenHeight() * 0.75
+local collapsedHeight = 217
+
+local CHAT_COLORS = {
+	CHAT_MSG_SAY = { 1, 1, 1 },
+	CHAT_MSG_YELL = { 1, 0.25, 0.25 },
+	CHAT_MSG_GUILD = { 0.25, 1, 0.25 },
+	CHAT_MSG_GUILD_ACHIEVEMENT = { 1, 1, 0 },
+	CHAT_MSG_OFFICER = { 0.25, 0.73, 0.25 },
+	CHAT_MSG_PARTY = { 0.6, 0.6, 1 },
+	CHAT_MSG_PARTY_LEADER = { 0.4, 0.4, 0.8 },
+	CHAT_MSG_RAID = { 1, 0.5, 0 },
+	CHAT_MSG_RAID_LEADER = { 1, 0.28, 0 },
+	CHAT_MSG_CHANNEL = { 1, 0.75, 0.75 },
+	CHAT_MSG_WHISPER = { 1, 0.4, 0.7 },
+	CHAT_MSG_WHISPER_INFORM = { 0.8, 0.2, 0.5 },
+	CHAT_MSG_SYSTEM = { 1, 1, 0 },
+	CHAT_MSG_EMOTE = { 1, 0.5, 0 },
+	CHAT_MSG_TEXT_EMOTE = { 1, 0.5, 0 },
+	CHAT_MSG_MONSTER_SAY = { 0.5, 0.5, 0.5 },
+	CHAT_MSG_MONSTER_WHISPER = { 1, 0.8, 0 },
+	CHAT_MSG_AFK = { 1, 1, 0 },
+	CHAT_MSG_DND = { 1, 1, 0 },
+	CHAT_MSG_ADDON = { 1, 1, 0 },
+	CHAT_MSG_CHANNEL_JOIN = { 1, 0.75, 0.75 },
+	CHAT_MSG_CHANNEL_LEAVE = { 1, 0.75, 0.75 },
+	CHAT_MSG_BATTLEGROUND = { 1, 0.5, 0 },
+	CHAT_MSG_BATTLEGROUND_LEADER = { 1, 0.8, 0.7 }
+}
+
+local CHAT_CHANNEL = {
+	CHAT_MSG_SAY = "[S]",
+	CHAT_MSG_YELL = "[Y]",
+	CHAT_MSG_GUILD = "[G]",
+	CHAT_MSG_PARTY = "[P]",
+	CHAT_MSG_PARTY_LEADER = "[PL]",
+	CHAT_MSG_RAID = "[R]",
+	CHAT_MSG_RAID_LEADER = "[RL]",
+	CHAT_MSG_WHISPER = "[W]",
+	CHAT_MSG_WHISPER_INFORM = "[T]",
+	CHAT_MSG_SYSTEM = "[SYSTEM]"
+}
+
+f:EnableMouse(true)
+
+f:SetBackdrop( { bgFile = bgFile, edgeFile = edgeFile, edgeSize = 1, insets = { left = 0, right = 0, top = 0, bottom = 0 } } )
 f:SetBackdropColor(0.2, 0.2, 0.2, 1)
 f:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, 1)
-
-f.expandedHeight = GetScreenHeight() * 0.75
-f.collapsedHeight = 217
 
 f:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 1, 20)
 f:SetSize(432, 200)
 
---[[
-local windowTypes = { "General", "Guild", "Whisper" }
+local function ReplaceRaidIcons(msg)
+	if not msg then return "" end
 
-for _, windowType in ipairs(windowTypes) do
-	local cw = CreateFrame("ScrollingMessageFrame", nil, SteakChatFrame)
+	local icons = { star = 1, circle = 2, diamond = 3, triangle = 4, moon = 5, square = 6, cross = 7, x = 7, skull = 8 }
 
-	cw:SetBackdrop(nil)
-end
-]]
+	return msg:gsub("{(.-)}", function(token)
+		local index = icons[token:lower()]
 
-for i=2,10 do
-	local frame = _G["ChatFrame"..i]
-	local tab = _G["ChatFrame"..i.."Tab"]
-
-	if frame then
-		frame:Hide()
-	end
-
-	if tab then
-		tab:Hide()
-	end
-end
-
-ChatFrame1:SetClampedToScreen(false)
-ChatFrame1:ClearAllPoints()
-ChatFrame1:SetPoint("TOPLEFT", SteakChatFrame, 1, -1)
-ChatFrame1:SetPoint("BOTTOMRIGHT", SteakChatFrame, -1, 1)
-ChatFrame1:SetParent(SteakChatFrame)
-ChatFrame1:SetBackdrop(nil)
-ChatFrame1Tab:Hide()
-
-SteakChatPlayerData = {}
-
-f.fonts = {
-	"Interface\\AddOns\\SteakChat\\Fonts\\Audiowide-Regular.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Geo-Italic.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Geo-Regular.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\JockeyOne-Regular.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Macondo-Regular.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\NovaSquare-Regular.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-Black.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-Bold.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-ExtraBold.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-Medium.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-Regular.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-SemiBold.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\Orbitron-VariableFont_wght.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\PirataOne-Regular.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\StoryScript-Regular.ttf",
-	"Interface\\AddOns\\SteakChat\\Fonts\\UnifrakturCook-Bold.ttf"
-}
-
-f.chatColors = {
-	["CHAT_MSG_MONSTER_SAY"] = {
-		["r"] = 0.5,
-		["g"] = 0.5,
-		["b"] = 0.5,
-		["a"] = 1,
-	},
-	["CHAT_MSG_MONSTER_WHISPER"] = {
-		["r"] = 1,
-		["g"] = 0.8,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_AFK"] = {
-		["r"] = 1,
-		["g"] = 1,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_DND"] = {
-		["r"] = 1,
-		["g"] = 1,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_ADDON"] = {
-		["r"] = 1,
-		["g"] = 1,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_CHANNEL"] = {
-		["r"] = 0.992157,
-		["g"] = 0.752941,
-		["b"] = 0.752941,
-		["a"] = 1,
-	},
-	["CHAT_MSG_CHANNEL_JOIN"] = {
-		["r"] = 0.992157,
-		["g"] = 0.752941,
-		["b"] = 0.752941,
-		["a"] = 1,
-	},
-	["CHAT_MSG_CHANNEL_LEAVE"] = {
-		["r"] = 0.992157,
-		["g"] = 0.752941,
-		["b"] = 0.752941,
-		["a"] = 1,
-	},
-	["CHAT_MSG_EMOTE"] = {
-		["r"] = 1,
-		["g"] = 0.5,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_TEXT_EMOTE"] = {
-		["r"] = 1,
-		["g"] = 0.5,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_GUILD"] = {
-		["r"] = 0.235294,
-		["g"] = 0.886275,
-		["b"] = 0.247059,
-		["a"] = 1,
-	},
-	["CHAT_MSG_GUILD_ACHIEVEMENT"] = {
-		["r"] = 1,
-		["g"] = 1,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_OFFICER"] = {
-		["r"] = 0.250980,
-		["g"] = 0.737255,
-		["b"] = 0.250980,
-		["a"] = 1,
-	},
-	["CHAT_MSG_MONSTER_SAY"] = {
-		["r"] = 1,
-		["g"] = 0.6,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_MONSTER_WHISPER"] = {
-		["r"] = 1,
-		["g"] = 0,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_PARTY"] = {
-		["r"] = 0.666667,
-		["g"] = 0.670588,
-		["b"] = 1,
-		["a"] = 1,
-	},
-	["CHAT_MSG_PARTY_LEADER"] = {
-		["r"] = 0.4,
-		["g"] = 0.4,
-		["b"] = 0.8,
-		["a"] = 1,
-	},
-	["CHAT_MSG_RAID"] = {
-		["r"] = 1,
-		["g"] = 0.5,
-		["b"] = 0.039216,
-		["a"] = 1,
-	},
-	["CHAT_MSG_RAID_LEADER"] = {
-		["r"] = 1,
-		["g"] = 0.282353,
-		["b"] = 0.035294,
-		["a"] = 1,
-	},
-	["CHAT_MSG_SAY"] = {
-		["r"] = 1,
-		["g"] = 1,
-		["b"] = 1,
-		["a"] = 1,
-	},
-	["CHAT_MSG_WHISPER"] = {
-		["r"] = 1,
-		["g"] = 0.4,
-		["b"] = 0.7,
-		["a"] = 1,
-	},
-	["CHAT_MSG_WHISPER_INFORM"] = {
-		["r"] = 0.8,
-		["g"] = 0.2,
-		["b"] = 0.5,
-		["a"] = 1,
-	},
-	["CHAT_MSG_YELL"] = {
-		["r"] = 1,
-		["g"] = 0,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_BATTLEGROUND"] = {
-		["r"] = 1,
-		["g"] = 0.5,
-		["b"] = 0,
-		["a"] = 1,
-	},
-	["CHAT_MSG_BATTLEGROUND_LEADER"] = {
-		["r"] = 1,
-		["g"] = 0.862745,
-		["b"] = 0.717647,
-		["a"] = 1,
-	},
-	["CHAT_MSG_SYSTEM"] = {
-		["r"] = 1,
-		["g"] = 1,
-		["b"] = 0,
-		["a"] = 1,
-	},
-}
-
-local ChatEvents = {
-	"CHAT_MSG_WHISPER",
-	"CHAT_MSG_WHISPER_INFORM",
-	"CHAT_MSG_GUILD",
-	"CHAT_MSG_OFFICER",
-	"CHAT_MSG_GUILD_ITEM_LOOTED",
-	"CHAT_MSG_GUILD_ACHIEVEMENT",
-	"CHAT_MSG_RAID",
-	"CHAT_MSG_RAID_LEADER",
-	--"CHAT_MSG_RAID_WARNING",
-	"CHAT_MSG_PARTY",
-	"CHAT_MSG_PARTY_LEADER",
-	"CHAT_MSG_INSTANCE_CHAT",
-	"CHAT_MSG_INSTANCE_CHAT_LEADER",
-	"CHAT_MSG_BATTLEGROUND",
-	"CHAT_MSG_BATTLEGROUND_LEADER",
-	"CHAT_MSG_SYSTEM",
-	"CHAT_MSG_SAY",
-	"CHAT_MSG_YELL",
-	"CHAT_MSG_CHANNEL",
-	--"CHAT_MSG_CHANNEL_JOIN",
-	--"CHAT_MSG_CHANNEL_LEAVE",
-	--"CHAT_MSG_EMOTE",
-	--"CHAT_MSG_TEXT_EMOTE",
-	"CHAT_MSG_MONSTER_SAY",
-	"CHAT_MSG_MONSTER_WHISPER",
-	"CHAT_MSG_MONSTER_YELL",
-}
-
-local channels = {
-	"CHAT_MSG_SAY",
-	"CHAT_MSG_YELL",
-	"CHAT_MSG_CHANNEL",
-	"CHAT_MSG_RAID",
-	"CHAT_MSG_GUILD",
-	"CHAT_MSG_EMOTE",
-	"CHAT_MSG_TEXT_EMOTE",
-	"CHAT_MSG_GUILD_ACHIEVEMENT",
-	"CHAT_MSG_OFFICER",
-	"CHAT_MSG_GUILD_ITEM_LOOTED",
-	"CHAT_MSG_RAID_LEADER",
-	"CHAT_MSG_RAID_WARNING",
-	"CHAT_MSG_PARTY",
-	"CHAT_MSG_PARTY_LEADER",
-	"CHAT_MSG_INSTANCE_CHAT",
-	"CHAT_MSG_INSTANCE_CHAT_LEADER",
-	"CHAT_MSG_BATTLEGROUND",
-	"CHAT_MSG_BATTLEGROUND_LEADER",
-}
-
-local origAddMessage = ChatFrame1.AddMessage
-ChatFrame1.AddMessage = function(self, text, ...)
-	local timestamp = date("%H:%M:%S")
-	text = ("|cffff8000[%s]|r %s"):format(timestamp, text or "")
-	return origAddMessage(self, text, ...)
-end
-
-function f.GetClassColor(class)
-        class = strupper(class:gsub(" ", ""))
-
-        if RAID_CLASS_COLORS[class] ~= nil then
-                return RAID_CLASS_COLORS[class].r or 1, RAID_CLASS_COLORS[class].g or 1, RAID_CLASS_COLORS[class].b or 1, RAID_CLASS_COLORS[class].a or 1
-        else
-                return 1, 0, 1, 1
-        end
-end
-
-function f.GetNumGroupMembers()
-	local party, raid = GetNumPartyMembers(), GetNumRaidMembers()
-
-	if raid > 0 then
-		return raid, "raid"
-	elseif party > 0 then
-		return party, "party"
-	else
-		return 0, nil
-	end
-end
-
-function f.AddPlayerData(name, rank, level, class, note)
-	SteakChatPlayerData[name] = SteakChatPlayerData[name] or {}
-
-	if name ~= nil then SteakChatPlayerData[name].name = name end
-	if level ~= nil then SteakChatPlayerData[name].level = level end
-	if class ~= nil then SteakChatPlayerData[name].class = strupper(class) end
-	if rank ~= nil then SteakChatPlayerData[name].rank = rank end
-	if note ~= nil then SteakChatPlayerData[name].note = note end
-end
-
-function f.GetGuildInfoByName(memberName)
-	if GetNumGuildMembers() > 250 then return false end
-
-	local i = 1
-
-	while GetGuildRosterInfo(i) ~= nil do
-		local name, rank, rankIndex, level, class, _, note, officerNote, online = GetGuildRosterInfo(i)
-
-		if name == memberName then
-			return name, rank, rankIndex, level, class, note, officerNote, online
+		if index then
+			return "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_"..index..":0|t"
 		end
 
-		i = i + 1
-	end
-
-	return false
-end
-
-function f.GetPublicNote(charName)
-	if not IsInGuild() then return end
-	if GetNumGuildMembers() > 250 then return false end
-
-	local i = 1
-
-	while GetGuildRosterInfo(i) ~= nil do
-		local name, _, _, _, _, _, note = GetGuildRosterInfo(i)
-
-		if name == charName or charName == name:sub(1, -4) and note ~= "" then
-			return note
-		end
-	end
-
-	return false
-end
-
-function f.GetPlayerLink(playerName, lineID)
-	if strlen(playerName) == 0 then return end
-
-	local link = ""
-	local name, rank, _, level, class, note = f.GetGuildInfoByName(playerName)
-
-	if name == playerName then
-		f.AddPlayerData(playerName, rank, level, class, note or "")
-
-		local r, g, b, a = f.GetClassColor(class)
-		return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format((r * 255), (g * 255), (b * 255), playerName, lineID, playerName)
-	elseif f.GetNumGroupMembers() > 0 then
-		for i=1,f.GetNumGroupMembers(),1 do
-			if UnitExists("raid"..i) and UnitName("raid"..i) == playerName then
-				class = select(2, UnitClass("raid"..i))
-				level = UnitLevel("raid"..i)
-				f.AddPlayerData(playerName, nil, level, class, nil)
-
-				local r, g, b, a = f.GetClassColor(class)
-				return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format(( r * 255), ( g * 255), ( b * 255), playerName, lineID, playerName)
-			elseif UnitExists("party"..i) and UnitName("party"..i) == playerName then
-				class = select(2, UnitClass("party"..i))
-				level = UnitLevel("party"..i)
-				f.AddPlayerData(playerName, nil, level, class, nil)
-
-				local r, g, b, a = f.GetClassColor(class)
-				return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format(( r * 255), ( g * 255), ( b * 255), playerName, lineID, playerName)
-			end
-		end
-	elseif SteakChatPlayerData[playerName] ~= nil then
-		class = SteakChatPlayerData[playerName].class
-		level = SteakChatPlayerData[playerName].level
-
-		local r, g, b, a = f.GetClassColor(class)
-		return ("|cff%02x%02x%02x|Hplayer:%s:%s|h%s|h|r"):format(( r * 255), ( g * 255), ( b * 255), playerName, lineID, playerName)
-	else
-		return ("|Hplayer:%s:%s|h%s|h|r"):format(playerName, lineID, playerName)
-	end
-end
-
-function f.AddGuildInfo(self, event, msg, sender, ...)
-	if GetNumGuildMembers() > 250 then return end
-	local i = 1
-
-	while GetGuildRosterInfo(i) ~= nil do
-		local name, rank, _, level, _, _, note, _, online = GetGuildRosterInfo(i)
-
-		if name == sender or send == name:sub(1, -4) then
-			if note ~= "" then
-				msg = ("[|cffffff00%s:%d|r](|cffffff00%s|r) %s"):format(rank, level, note, msg)
-			else
-				msg = ("[|cffffff00%s:%d|r] %s"):format(rank, level, msg)
-			end
-			break
-		end
-
-		i = i + 1
-	end
-
-	return false, msg, sender, ...
-end
-
-function f.GetChatFrame(name)
-        for i=1,NUM_CHAT_WINDOWS,1 do
-                if GetChatWindowInfo(i) == name then
-                        local frame = _G["ChatFrame"..i]
-                        break
-                end
-        end
-        
-        if not frame then frame = FCF_OpenNewWindow(name) end
-        
-        return frame
-end
-
-function f:PLAYER_ENTERING_WORLD(self, ...)
-	ChatFrameMenuButton:SetScript("OnShow", function(self) self:Hide() end)
-	ChatFrameMenuButton:Hide()
-
-	FriendsMicroButton:SetScript("OnShow", function(self) self:Hide() end)
-	FriendsMicroButton:Hide()
-
-	HelpMicroButton:SetParent(ChatFrame1ButtonFrame)
-	HelpMicroButton:ClearAllPoints()
-	--HelpMicroButton:SetFrameLevel(3)
-	--HelpMicroButton:SetFrameStrata("HIGH")
-	HelpMicroButton:SetPoint("BOTTOM", ChatFrame1ButtonFrameUpButton, "TOP", 0, 4)
-end
-
-function f:PLAYER_LOGIN(self, ...)
-	--[[
-        if GetChannelName("World") == 0 then JoinChannelByName("World") end
-        if GetChannelName("Trade") == 0 then JoinChannelByName("Trade") end
-        if GetChannelName("General") == 0 then JoinChannelByName("General") end
- 
-        local frame = ChatFrame1
-        
-        ChatFrame_RemoveChannel(frame, "World")
-        ChatFrame_RemoveChannel(frame, "Trade")
-        ChatFrame_RemoveChannel(frame, "General")
-
-        ChatFrame_RemoveMessageGroup(frame, "LOOT")
-        ChatFrame_RemoveMessageGroup(frame, "COMBAT_FACTION_CHANGE")
-        ChatFrame_RemoveMessageGroup(frame, "CURRENCY")
-        ChatFrame_RemoveMessageGroup(frame, "MONEY")
-        ChatFrame_RemoveMessageGroup(frame, "BN_WHISPER")
-        ChatFrame_RemoveMessageGroup(frame, "WHISPER")
-        ChatFrame_RemoveMessageGroup(frame, "IGNORED")
-        ChatFrame_RemoveMessageGroup(frame, "GUILD")
-        ChatFrame_RemoveMessageGroup(frame, "OFFICER")
-        ChatFrame_RemoveMessageGroup(frame, "GUILD_ACHIEVEMENT")
-        
-        frame = f.GetChatFrame("Guild")
-
-        ChatFrame_RemoveAllMessageGroups(frame)
-        ChatFrame_RemoveAllChannels(frame)
-        
-        ChatFrame_AddMessageGroup(frame, "GUILD")
-        ChatFrame_AddMessageGroup(frame, "OFFICER")
-        ChatFrame_AddMessageGroup(frame, "GUILD_ACHIEVEMENT")        
-                
-        frame = f.GetChatFrame("Whispers")
-        
-        ChatFrame_RemoveAllMessageGroups(frame)
-        ChatFrame_RemoveAllChannels(frame)
-
-        ChatFrame_AddMessageGroup(frame, "WHISPER")
-        ChatFrame_AddMessageGroup(frame, "BN_WHISPER")
-        ChatFrame_AddMessageGroup(frame, "IGNORED")
-                
-        frame = f.GetChatFrame("Loot")
-
-        ChatFrame_RemoveAllMessageGroups(frame)
-        ChatFrame_RemoveAllChannels(frame)
-
-        ChatFrame_AddMessageGroup(frame, "LOOT")
-        ChatFrame_AddMessageGroup(frame, "COMBAT_FACTION_CHANGE")
-        ChatFrame_AddMessageGroup(frame, "CURRENCY")
-        ChatFrame_AddMessageGroup(frame, "MONEY")
-        
-        frame = f.GetChatFrame("World")
-        
-        ChatFrame_RemoveAllMessageGroups(frame)
-        ChatFrame_RemoveAllChannels(frame)
-
-        ChatFrame_AddChannel(frame, "World")
-        ChatFrame_AddChannel(frame, "Trade")
-        ChatFrame_AddChannel(frame, "General")
-	]]
-
-	if GetNumGuildMembers() > 250 then
-		for _, channel in ipairs(channels) do
-			ChatFrame_AddMessageEventFilter(channel, f.AddGuildInfo)
-		end
-	end
-
-	for i=1,NUM_CHAT_WINDOWS do
-		local cf = _G["ChatFrame"..i]
-		local eb = _G["ChatFrame"..i.."EditBox"]
-
-		cf:SetBackdrop(nil)
-		--[[
-		cf:SetBackdrop( { bgFile = nil, edgeFile = "Interface\\Buttons\\WHITE8x8", tile = true, tileSize = 32, edgeSize = 1, insets = { left = 0, right = 0, top = 0, bottom = 0 } } )
-		cf:SetBackdropColor(0.2, 0.2, 0.2, 1)
-		local borderColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
-		cf:SetBackdropBorderColor(borderColor.r or 1, borderColor.g or 0.5, borderColor.b or 0, 1)
-		]]
-
-		for _, region in pairs({eb:GetRegions()}) do
-			if region:GetObjectType() == "Texture" then region:Hide() end
-		end
-
-		local bg = eb:CreateTexture(nil, "BACKGROUND")
-		bg:SetPoint("TOPLEFT", eb, "TOPLEFT", 8, -8)
-		bg:SetPoint("BOTTOMLEFT", eb, "BOTTOMLEFT", 8, 8)
-		bg:SetPoint("TOPRIGHT", eb, "TOPRIGHT", -8, -8)
-		bg:SetPoint("BOTTOMRIGHT", eb, "BOTTOMRIGHT", -8, 8)
-		bg:SetTexture(0, 0, 0, 0.8)
-		eb.bg = bg
-
-		_G[eb:GetName().."Header"]:SetFont(f.fonts[1], 12, "OUTLINE")
-	end
-
-	--[[
-	ChatFrame1EditBox:SetBackdrop(nil)
-	for index, region in pairs({ChatFrame1EditBox:GetRegions()}) do
-		if region:GetName() then
-			region:Hide()
-		end
-	end
-	]]
-
-	hooksecurefunc("ChatEdit_DeactivateChat", function(editBox)
-		editBox:SetAlpha(0)
-		if not editBox.bg then
-			local bg = editBox:CreateTexture(nil, "BACKGROUND")
-			bg:SetPoint("TOPLEFT", eb, "TOPLEFT", 8, -8)
-			bg:SetPoint("BOTTOMLEFT", eb, "BOTTOMLEFT", 8, 8)
-			bg:SetPoint("TOPRIGHT", eb, "TOPRIGHT", -8, -8)
-			bg:SetPoint("BOTTOMRIGHT", eb, "BOTTOMRIGHT", -8, 8)
-			bg:SetTexture(0, 0, 0, 0.8)
-			editBox.bg = bg
-		end
-		editBox.bg:Hide()
+		return "{"..token.."}"
 	end)
-
-	hooksecurefunc("ChatEdit_ActivateChat", function(editBox)
-		editBox:SetAlpha(1)
-		if not editBox.bg then
-			local bg = editBox:CreateTexture(nil, "BACKGROUND")
-			bg:SetPoint("TOPLEFT", eb, "TOPLEFT", 8, -8)
-			bg:SetPoint("BOTTOMLEFT", eb, "BOTTOMLEFT", 8, 8)
-			bg:SetPoint("TOPRIGHT", eb, "TOPRIGHT", -8, -8)
-			bg:SetPoint("BOTTOMRIGHT", eb, "BOTTOMRIGHT", -8, 8)
-			bg:SetTexture(0, 0, 0, 0.8)
-			editBox.bg = bg
-		end
-		editBox.bg:Show()
-	end)
-
-	--[[
-	local bg = ChatFrame1EditBox:CreateTexture(nil, "BACKGROUND")
-	bg:SetPoint("TOPLEFT", ChatFrame1EditBox, "TOPLEFT", 8, -8)
-	bg:SetPoint("BOTTOMLEFT", ChatFrame1EditBox, "BOTTOMLEFT", 8, 8)
-	bg:SetPoint("TOPRIGHT", ChatFrame1EditBox, "TOPRIGHT", -8, -8)
-	bg:SetPoint("BOTTOMRIGHT", ChatFrame1EditBox, "BOTTOMRIGHT", -8, 8)
-	bg:SetTexture(0, 0, 0, 0.8)
-	]]
-
-	ChatFrameMenuButton:Hide()
 end
 
-function f.OnEnter(self)
+local function ReplaceHardcoreIcon(msg)
+	return msg:gsub("%?}", "|TInterface\\TargetingFrame\\UI-TargetingFrame-Skull:14:14|t")
+end
+
+local function OnEnter(self)
 	f.FrameStrata = f:GetFrameStrata()
 	f:SetFrameStrata("HIGH")
 	f.action = "grow"
 end
 
-function f.OnLeave(self)
+local function OnLeave(self)
 	f:SetFrameStrata(f.FrameStrata)
 	f.action = "shrink"
 end
 
-function f.OnHyperlinkEnter(self, link)
+local function OnHyperlinkClick(self, link, text, button)
+	SetItemRef(link, text, button)
+end
+
+local function OnHyperlinkEnter(self, link)
 	f.action = "grow"
 	f:SetFrameStrata("HIGH")
 
-	local type = strmatch(link, "^(.-):")
-	if(type == "item" or type == "enchant" or type == "spell" or type == "quest") then
+	local type = link:match("^(.-):")
+
+	if type == "item" or type == "enchant" or type == "spell" or type == "quest" then
 		ShowUIPanel(GameTooltip)
 		GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
 		GameTooltip:SetHyperlink(link)
@@ -604,10 +107,11 @@ function f.OnHyperlinkEnter(self, link)
 	end
 end
 
-function f.OnHyperlinkLeave(self, link)
+local function OnHyperlinkLeave(self, link)
 	if link ~= nil then
-		local type = strmatch(link, "^(.-):")
-		if(type == "item" or type == "enchant" or type == "spell" or type == "quest") then
+		local type = link:match("^(.-):")
+
+		if type == "item" or type == "enchant" or type == "spell" or type == "quest" then
 			HideUIPanel(GameTooltip)
 		end
 	end
@@ -618,167 +122,246 @@ local function OnUpdate(self, elapsed)
 	if self.timer < 0.01 then return end
 	self.timer = 0
 
-	--self.expandedHeight = self.expandedHeight or GetScreenHeight() * 0.75
-	--self.collapsedHeight = self.collapsedHeight or 200
-
-	if self.action == "shrink" and self:GetHeight() > self.collapsedHeight then
-		local newHeight = self:GetHeight() - 50
-
-		self:SetHeight(math.max(newHeight, self.collapsedHeight))
-	elseif self.action == "grow" and self:GetHeight() < self.expandedHeight then
-		local newHeight = self:GetHeight() + 50
-
-		self:SetHeight(math.min(newHeight, self.expandedHeight))
-	end
-
-	ChatFrame1:SetClampedToScreen(false)
-	ChatFrame1:ClearAllPoints()
-	ChatFrame1:SetPoint("TOPLEFT", SteakChatFrame, "TOPLEFT", 37, -5)
-	ChatFrame1:SetPoint("BOTTOMRIGHT", SteakChatFrame, "BOTTOMRIGHT", -4, 7)
-
-	ChatFrame1EditBox:ClearAllPoints()
-	ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, 4)
-	--ChatFrame1EditBox:SetPoint("BOTTOMLEFT", ChatFrame1Tab, "TOPLEFT", 0, -4)
-	ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
-
-	for i=2,NUM_CHAT_WINDOWS do
-		local cf = _G["ChatFrame"..i]
-		local eb = _G["ChatFrame"..i.."EditBox"]
-		local tab = _G["ChatFrame"..i.."Tab"]
-
-		cf:Hide()
-		tab:Hide()
-
-		eb:ClearAllPoints()
-		eb:SetAllPoints(ChatFrame1EditBox)
-	end
-
-	--[[
-	for i=1,NUM_CHAT_WINDOWS,1 do
-		local cf = _G["ChatFrame"..i]
-		local eb = _G["ChatFrame"..i.."EditBox"]
-		local tab = _G["ChatFrame"..i.."Tab"]
-
-		if cf:GetName() == "ChatFrame2" then
-			cf:ClearAllPoints()
-			cf:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, -24)
-			cf:SetPoint("TOPRIGHT", ChatFrame1, "TOPRIGHT", 0, -24)
-			cf:SetPoint("BOTTOMLEFT", ChatFrame1, "BOTTOMLEFT", 0, 0)
-			cf:SetPoint("BOTTOMRIGHT", ChatFrame1, "BOTTOMRIGHT", 0, 0)
-		elseif cf:GetName() ~= ChatFrame1:GetName() then
-			cf:ClearAllPoints()
-			cf:SetAllPoints(ChatFrame1)
-		end
-
-		tab:ClearAllPoints()
-
-		if i == 1 then
-			tab:SetPoint("TOPLEFT", ChatFrame1, "BOTTOMLEFT", 0, 4)
-		else
-			tab:SetPoint("LEFT", _G["ChatFrame"..(i-1).."Tab"], "RIGHT", 0, 0)
-		end
-
-		ChatFrame1EditBox:ClearAllPoints()
-		ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, 4)
-		--ChatFrame1EditBox:SetPoint("BOTTOMLEFT", ChatFrame1Tab, "TOPLEFT", 0, -4)
-		ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
-	end
-	]]
-end
-
-function f:UPDATE_CHAT_COLOR_NAME_BY_CLASS(type, enabled)
-        if not enabled then
-                SetChatColorNameByClass(type, true)
-        end
-end
-
-function f:UPDATE_CHAT_WINDOWS(self, ...)
-	for i=1,NUM_CHAT_WINDOWS,1 do
-		local cf = _G["ChatFrame"..i]
-		local eb = _G["ChatFrame"..i.."EditBox"]
-		local tab = _G["ChatFrame"..i.."Tab"]
-
-		cf.defaultLanguage = GetDefaultLanguage()
-
-		if cf:GetName() == "ChatFrame2" then
-			cf:ClearAllPoints()
-			cf:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, -24)
-			cf:SetPoint("TOPRIGHT", ChatFrame1, "TOPRIGHT", 0, -24)
-			cf:SetPoint("BOTTOMLEFT", ChatFrame1, "BOTTOMLEFT", 0, 0)
-			cf:SetPoint("BOTTOMRIGHT", ChatFrame1, "BOTTOMRIGHT", 0, 0)
-		elseif cf:GetName() ~= "ChatFrame1" then
-			cf:ClearAllPoints()
-			cf:SetAllPoints(ChatFrame1)
-		end
-
-		tab:ClearAllPoints()
-		if i == 1 then
-			tab:SetPoint("TOPLEFT", ChatFrame1, "BOTTOMLEFT", 0, 4)
-		else
-			tab:SetPoint("LEFT", _G["ChatFrame"..(i-1).."Tab"], "RIGHT", 0, 0)
-		end
-                
-		--ChatFrame1EditBox:ClearAllPoints()
-		--ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1Tab, "BOTTOMLEFT", 0, 4)
-		--ChatFrame1EditBox:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", 0, 4)
-		--ChatFrame1EditBox:SetWidth(ChatFrame1:GetWidth())
-		--ChatFrame1EditBox:SetAttribute("ignoreArrows", false)
-		--ChatFrame1EditBox:SetAltArrowKeyMode(false)
-
-		--ChatFrame1EditBox:SetBackdrop(nil)
-
-		eb:ClearAllPoints()
-		eb:SetPoint("TOPLEFT", cf, "TOPLEFT", 0, 4)
-		eb:SetPoint("TOPRIGHT", cf, "TOPRIGHT", 0, 4)
-		eb:SetFont(f.fonts[1], 12, "OUTLINE")
-
-                ChatFrame1EditBoxLeft:SetTexture(nil)
-                ChatFrame1EditBoxMid:SetTexture(nil)
-                ChatFrame1EditBoxRight:SetTexture(nil)
-
-		_G["ChatFrame"..i.."EditBoxLeft"]:SetTexture(nil)
-		_G["ChatFrame"..i.."EditBoxMid"]:SetTexture(nil)
-		_G["ChatFrame"..i.."EditBoxRight"]:SetTexture(nil)
-               
-		cf:SetFont(f.fonts[1], 12, "OUTLINE")
-
-		SetChatWindowAlpha(i, 0.8) -- Set the alpha of the chat window to 80%
-		SetChatWindowColor(i, 0, 0, 0) -- Set the background color of the chat window to black
-
-		cf:SetScript("OnEnter", f.OnEnter)
-		cf:SetScript("OnLeave", f.OnLeave)
-		cf:HookScript("OnHyperlinkEnter", f.OnHyperlinkEnter)
-		cf:HookScript("OnHyperlinkLeave", f.OnHyperlinkLeave)
-		--cf:SetScript("OnUpdate", f.OnUpdate)
-
-		cf:EnableKeyboard(true)
-		cf:EnableMouse(true)
-		cf:EnableMouseWheel(true)
-		cf:SetFading(false)
+	if self.action == "shrink" and self:GetHeight() > collapsedHeight then
+		self:SetHeight(math.max(self:GetHeight() - 50, collapsedHeight))
+	elseif self.action == "grow" and self:GetHeight() < expandedHeight then
+		self:SetHeight(math.min(self:GetHeight() + 50, expandedHeight))
 	end
 end
 
+function f:PLAYER_LOGIN(self, ...)
+	local eb = ChatFrame1EditBox
 
-f:SetScript("OnUpdate", OnUpdate)
-f:SetScript("OnEvent", function(self, event, ...)
+	if eb then
+		eb:SetParent(f)
+		eb:SetPoint("TOPLEFT", f, "TOPLEFT", 6, -6)
+		eb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -6)
+		eb:SetFont("Interface\\AddOns\\SteakChat\\Fonts\\Audiowide-Regular.ttf", 9, "OUTLINE")
+		_G[eb:GetName().."Header"]:SetFont("Interface\\AddOns\\SteakChat\\Fonts\\Audiowide-Regular.ttf", 9, "OUTLINE")
+	end
+
+	ChatFrame1EditBoxLeft:Hide()
+	ChatFrame1EditBoxMid:Hide()
+	ChatFrame1EditBoxRight:Hide()
+	
+	local bg = eb:CreateTexture(nil, "BACKGROUND")
+	bg:SetTexture(0, 0, 0, 0.8)
+	bg:SetPoint("TOPLEFT", eb, "TOPLEFT", 8, -8)
+	bg:SetPoint("BOTTOMRIGHT", eb, "BOTTOMRIGHT", -8, 8)
+
+	local frames = {
+		ChatFrameMenuButton,
+		FriendsMicroButton
+	}
+
+	for i=1,7 do
+		table.insert(frames, _G["ChatFrame"..i])
+		table.insert(frames, _G["ChatFrame"..i.."Tab"])
+	end
+
+	for _, frame in ipairs(frames) do
+		if frame then
+			frame:UnregisterAllEvents()
+			frame:SetScript("OnEvent", nil)
+			frame:SetScript("OnUpdate", nil)
+			frame:SetScript("OnShow", function(self) self:Hide() end)
+			frame:Hide()
+		end
+	end
+	
+	DEFAULT_CHAT_FRAME = f.windows[1]
+end
+
+local function OnEvent(self, event, ...)
 	if self[event] then
-		self[event](event, ...)
-	else
-		print("|cffff8040[SteakChat]:|r unhandled event (|cff00ff00"..event.."|r)")
+		self[event](self, event, ...)
+	elseif event == "CHAT_MSG_SYSTEM" then
+		local msg, _, channel, sender, _, _, chanID, chanName, _, _, guid = ...
+		local timestamp = date("|cffff8000[%H:%M:%S]|r")
+		local r, g, b = unpack(CHAT_COLORS[event])
+		local message = "%s%s %s"
+		local chan = channel or CHAT_CHANNEL[event]
+
+		self:AddMessage(message:format(timestamp, chan, msg), r, g, b)	
+	elseif event:match("^CHAT_MSG_") then
+		local msg, _, channel, sender, _, _, chanID, chanName, _, _, _, guid = ...
+		local timestamp = date("|cffff8000[%H:%M:%S]|r")
+		local _, class, _, race, faction, name = GetPlayerInfoByGUID(guid)		
+		local r, g, b = unpack(CHAT_COLORS[event])
+		local classColor = RAID_CLASS_COLORS[class] or { r = 0.5, g = 0.5, b = 0.5 }
+		local player = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(classColor.r*255, classColor.g*255, classColor.b*255, name or "Unknown", name or "Unknown")
+		local chan = channel or CHAT_CHANNEL[event]
+		local i = 1
+		local guildie = false
+		local gName, gRank, gLevel, gNote
+		
+		while GetGuildRosterInfo(i) ~= nil do
+			gName, gRank, _, gLevel, _, _, gNote = GetGuildRosterInfo(i)
+			
+			if gName == name then
+				guildie = true
+				break
+			end
+			
+			i = i + 1
+		end
+
+		msg = ReplaceHardcoreIcon(msg)
+		msg = ReplaceRaidIcons(msg)
+
+		if guildie then
+			if gNote and gNote ~= "" then
+				self:AddMessage(("%s%s[%s]%s[%s]:(%s) %s"):format(timestamp, chan, gLevel, player, gRank, gNote, msg), r, g, b)
+			else
+				self:AddMessage(("%s%s[%s]%s[%s]: %s"):format(timestamp, chan, gLevel, player, gRank, msg), r, g, b)
+			end
+		else
+			self:AddMessage(("%s%s%s: %s"):format(timestamp, chan, player, msg), r, g, b)
+		end
 	end
-end)
-
---[[
-for _, event in ipairs(ChatEvents) do
-	ChatFrame_AddMessageEventFilter(event)
 end
-]]
 
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:RegisterEvent("UPDATE_CHAT_WINDOWS")
-f:RegisterEvent("UPDATE_CHAT_COLOR_NAME_BY_CLASS")
---f:RegisterEvent("VARIABLES_LOADED")
---f:RegisterEvent("CHAT_MSG_WHISPER")
---f:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
+f:SetScript("OnEnter", OnEnter)
+f:SetScript("OnLeave", OnLeave)
+f:SetScript("OnUpdate", OnUpdate)
+f:SetScript("OnEvent", OnEvent)
+
 f:RegisterEvent("PLAYER_LOGIN")
---f:RegisterEvent("ADDON_LOADED")
+
+f.windows = {}
+f.tabs = {}
+
+local function CreateChatWindow(title, events)
+	local cf = CreateFrame("ScrollingMessageFrame", nil, f)
+
+	cf:SetFont("Interface\\AddOns\\SteakChat\\Fonts\\Audiowide-Regular.ttf", 9, "OUTLINE")
+	cf:SetJustifyH("LEFT")
+	cf:SetFading(false)
+	cf:SetTimeVisible(0)
+	cf:SetFadeDuration(0)
+	cf:SetIndentedWordWrap(true)
+	cf:SetHyperlinksEnabled(true)
+	cf:SetMaxLines(500)
+	cf:EnableMouseWheel(true)
+	cf:EnableMouse(true)
+
+	cf:SetPoint("TOPLEFT", f, "TOPLEFT", 6, -6)
+	cf:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -6, 20)
+
+	cf:SetScript("OnHyperlinkClick", OnHyperlinkClick)
+	cf:SetScript("OnHyperlinkEnter", OnHyperlinkEnter)
+	cf:SetScript("OnHyperlinkLeave", OnHyperlinkLeave)
+	cf:SetScript("OnEnter", OnEnter)
+	cf:SetScript("OnLeave", OnLeave)
+
+	cf:SetScript("OnMouseWheel", function(self, delta)
+		if delta > 0 then
+			self:ScrollUp()
+		else
+			self:ScrollDown()
+		end
+	end)
+
+	cf:SetScript("OnEvent", OnEvent)
+
+	for _, event in ipairs(events) do
+		cf:RegisterEvent(event)
+	end
+
+	table.insert(f.windows, cf)
+
+	local tab = CreateFrame("Button", nil, f)
+
+	tab:SetBackdrop( { bgFile = bgFile, edgeFile = edgeFile, edgeSize = 1, insets = { left = 0, right = 0, top = 0, bottom = 0 } } )
+	tab:SetBackdropColor(0.2, 0.2, 0.2, 1)
+	tab:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, 1)
+
+	local label = tab:CreateFontString(nil, "OVERLAY")
+	label:SetPoint("CENTER")
+	label:SetFont("Interface\\AddOns\\SteakChat\\Fonts\\Audiowide-Regular.ttf", 8, "OUTLINE")
+	label:SetText(title)
+	label:SetTextColor(1, 1, 1)
+	tab:SetSize(label:GetStringWidth() + 20, 12)
+	tab.index = #f.windows
+
+	tab:SetScript("OnClick", function(self, button)
+		for i, cf in ipairs(f.windows) do
+			if i == self.index then
+				f.tabs[i]:SetBackdropColor(0.5, 0.5, 0.5, 1)
+				cf:Show()
+			else
+				f.tabs[i]:SetBackdropColor(0.2, 0.2, 0.2, 1)
+				cf:Hide()
+			end
+		end
+	end)
+
+	table.insert(f.tabs, tab)
+end
+
+CreateChatWindow("General", {
+	"CHAT_MSG_SAY",
+	"CHAT_MSG_YELL",
+	"CHAT_MSG_CHANNEL",
+	"CHAT_MSG_PARTY",
+	"CHAT_MSG_PARTY_LEADER",
+	"CHAT_MSG_RAID",
+	"CHAT_MSG_RAID_LEADER",
+	"CHAT_MSG_RAID_WARNING",
+	"CHAT_MSG_INSTANCE_CHAT",
+	"CHAT_MSG_INSTANCE_CHAT_LEADER",
+	"CHAT_MSG_BATTLEGROUND",
+	"CHAT_MSG_BATTLEGROUND_LEADER",
+	"CHAT_MSG_GUILD",
+	"CHAT_MSG_GUILD_ACHIEVEMENT",
+	"CHAT_MSG_OFFICER",
+	"CHAT_MSG_GUILD_ITEM_LOOTED",
+	"CHAT_MSG_SYSTEM",
+	"CHAT_MSG_EMOTE",
+	"CHAT_MSG_TEXT_EMOTE",
+	"CHAT_MSG_CHANNEL_JOIN",
+	"CHAT_MSG_CHANNEL_LEAVE"
+})
+
+CreateChatWindow("Guild", {
+	"CHAT_MSG_GUILD",
+	"CHAT_MSG_GUILD_ACHIEVEMENT",
+	"CHAT_MSG_OFFICER",
+	"CHAT_MSG_GUILD_ITEM_LOOTED"
+})
+
+CreateChatWindow("Group", {
+	"CHAT_MSG_PARTY",
+	"CHAT_MSG_PARTY_LEADER",
+	"CHAT_MSG_RAID",
+	"CHAT_MSG_RAID_LEADER",
+	"CHAT_MSG_RAID_WARNING",
+	"CHAT_MSG_INSTANCE_CHAT",
+	"CHAT_MSG_INSTANCE_CHAT_LEADER",
+	"CHAT_MSG_BATTLEGROUND",
+	"CHAT_MSG_BATTLEGROUND_LEADER"
+})
+
+CreateChatWindow("Whisper", {
+	"CHAT_MSG_WHISPER",
+	"CHAT_MSG_WHISPER_INFORM"
+})
+
+CreateChatWindow("Loot", {
+	"CHAT_MSG_LOOT",
+	"CHAT_MSG_GUILD_ITEM_LOOTED"
+})
+
+for index, tab in ipairs(f.tabs) do
+	if index == 1 then
+		f.tabs[index]:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2, 2)
+	else
+		f.tabs[index]:SetPoint("LEFT", f.tabs[index-1], "RIGHT", 2, 0)
+	end
+end
+
+for i=2,#f.windows do
+	f.windows[i]:Hide()
+end
+
+f.tabs[1]:SetBackdropColor(0.5, 0.5, 0.5, 1)
