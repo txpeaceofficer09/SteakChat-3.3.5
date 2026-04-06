@@ -40,13 +40,99 @@ local CHAT_CHANNEL = {
 	CHAT_MSG_SAY = "[S]",
 	CHAT_MSG_YELL = "[Y]",
 	CHAT_MSG_GUILD = "[G]",
+	CHAT_MSG_GUILD_ACHIEVEMENT = "[GA]",
+	CHAT_MSG_OFFICER = "[GO]",
+	CHAT_MSG_CHANNEL = "[C]",
 	CHAT_MSG_PARTY = "[P]",
 	CHAT_MSG_PARTY_LEADER = "[PL]",
 	CHAT_MSG_RAID = "[R]",
 	CHAT_MSG_RAID_LEADER = "[RL]",
+	CHAT_MSG_BATTLEGROUND = "[B]",
+	CHAT_MSG_BATTLEGROUND_LEADER = "[BL]",
 	CHAT_MSG_WHISPER = "[W]",
 	CHAT_MSG_WHISPER_INFORM = "[T]",
 	CHAT_MSG_SYSTEM = "[SYSTEM]"
+}
+
+local CHAT_EMOJIS = {
+	{ tex = "Interface\\emoji\\WM_EMOJI_5HEAD.blp", code = ":5head:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_ALLIANCE.blp", code = ":alliance:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_ANGRY.blp", code = ":angry:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_BOGGED.blp", code = ":bogged:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_BRUH.blp", code = ":bruh:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_DK.blp", code = ":dk:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_DRUID.blp", code = ":druid:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_HUNTER.blp", code = ":hunter:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_MAGE.blp", code = ":mage:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_PALADIN.blp", code = ":paladin:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_PRIEST.blp", code = ":priest:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_ROGUE.blp", code = ":rogue:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_SHAMAN.blp", code = ":shaman:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_WARLOCK.blp", code = ":warlock:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLASS_WARRIOR.blp", code = ":warrior:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CLOWN.blp", code = ":clown:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_CRASH.blp", code = ":crash:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_DEADGE.blp", code = ":deadge:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_DENTGE.blp", code = ":dentge:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_DESPAIR.blp", code = ":despair:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_DOGE.blp", code = ":doge:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_DORF.blp", code = ":dorf:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_DRAMA.blp", code = ":drama:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_EZMANE.blp", code = ":ezmane:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_FACEPALM.blp", code = ":facepalm:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_FEELSSTRONG.blp", code = ":feelsstrong:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_HEART.blp", code = ":heart:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_HMM.blp", code = ":hmm:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_HORDE.blp", code = ":horde:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_HUH.blp", code = ":huh:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_HYPE.blp", code = ":hype:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_JUICE.blp", code = ":juice:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_KEK.blp", code = ":kek:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_KEKWAIT.blp", code = ":kekwait:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_KEKW.blp", code = ":kekw:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_KISS.blp", code = ":kiss:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_LAY.blp", code = ":lay:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_LOOKDOWN.blp", code = ":lookdown:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_LOOKUP.blp", code = ":lookup:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_MADGE.blp", code = ":madge:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_MONKAGIGA.blp", code = ":monkagiga:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_MONKALAUGH.blp", code = ":monkalaugh:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_MONKASTOP.blp", code = ":monkastop:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_NO.blp", code = ":no:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_OKAYGE.blp", code = ":okayge:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_OK.blp", code = ":ok:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_ORCGE.blp", code = ":orcge:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PAUSECHAMP.blp", code = ":pausechamp:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEEPOCOMFY.blp", code = ":peepocomfy:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEEPOHAPPY.blp", code = ":peepohappy:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEEPOSAD.blp", code = ":peeposad:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEEPOSCARLET.blp", code = ":peeposcarlet:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEON.blp", code = ":peon:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEPEEZ.blp", code = ":pepez:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEPEGA.blp", code = ":pepega:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEPEHANDS.blp", code = ":pepehands:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEPELAUGH.blp", code = ":pepelaugh:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_PEPEW.blp", code = ":pepew:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_POGGIES.blp", code = ":poggies:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_QUEST.blp", code = ":quest:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_QUESTION.blp", code = ":question:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_RICH.blp", code = ":rich:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_SADGE.blp", code = ":sadge:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_SALLYGIGA.blp", code = ":sallygiga:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_SALLYHYPER.blp", code = ":hyper:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_SALLYS.blp", code = ":sallys:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_SALLYSTARE.blp", code = ":sallystare:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_SALLYWOW.blp", code = ":sallywow:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_SMUG.blp", code = ":smug:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_STARE.blp", code = ":stare:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_SUSGE.blp", code = ":susge:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_THINK.blp", code = ":think:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_UMM.blp", code = ":umm:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_WAVE.blp", code = ":wave:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_YEA.blp", code = ":yea:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_YES.blp", code = ":yes:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_YESHONEY.blp", code = ":yeshoney:" },
+	{ tex = "Interface\\emoji\\WM_EMOJI_YIKERS.blp", code = ":yikers:" }
 }
 
 f:EnableMouse(true)
@@ -67,15 +153,32 @@ local function ReplaceRaidIcons(msg)
 		local index = icons[token:lower()]
 
 		if index then
-			return "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_"..index..":0|t"
+			return "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_"..index..":18:18|t"
+		elseif token:lower():match("^rt%d$") then
+			return "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_"..token:lower():match("^rt(%d)$")..":0|t"
 		end
 
 		return "{"..token.."}"
 	end)
 end
 
-local function ReplaceHardcoreIcon(msg)
-	return msg:gsub("%?}", "|TInterface\\TargetingFrame\\UI-TargetingFrame-Skull:14:14|t")
+local function ReplaceEmojis(msg)
+	if not msg then return "" end
+
+	return msg:gsub(":(.-):", function(token)
+		local icon = nil
+
+		for _, data in ipairs(CHAT_EMOJIS) do
+			if data.code == ":"..token..":" then
+				icon = data.tex
+				break
+			end
+		end
+
+		if icon then return "|T"..icon..":24:24|t" end
+
+		return ":"..token..":"
+	end)
 end
 
 local function OnEnter(self)
@@ -170,6 +273,11 @@ function f:PLAYER_LOGIN(self, ...)
 	end
 	
 	DEFAULT_CHAT_FRAME = f.windows[1]
+
+	HelpMicroButton:SetParent(f)
+	HelpMicroButton:ClearAllPoints()
+	HelpMicroButton:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -2, 2)
+	HelpMicroButton:SetScale(28/HelpMicroButton:GetHeight())
 end
 
 local function OnEvent(self, event, ...)
@@ -183,22 +291,35 @@ local function OnEvent(self, event, ...)
 		local chan = channel or CHAT_CHANNEL[event]
 
 		self:AddMessage(message:format(timestamp, chan, msg), r, g, b)	
-	elseif event:match("^CHAT_MSG_") then
-		local msg, _, channel, sender, _, _, chanID, chanName, _, _, _, guid = ...
+	elseif event == "CHAT_MSG_EMOTE" or event == "CHAT_MSG_TEXT_EMOTE" then
+		local msg, sender, _, _, _, _, _, _, _, _, _, guid = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
 		local _, class, _, race, faction, name = GetPlayerInfoByGUID(guid)		
 		local r, g, b = unpack(CHAT_COLORS[event])
 		local classColor = RAID_CLASS_COLORS[class] or { r = 0.5, g = 0.5, b = 0.5 }
 		local player = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(classColor.r*255, classColor.g*255, classColor.b*255, name or "Unknown", name or "Unknown")
-		local chan = channel or CHAT_CHANNEL[event]
+
+		msg = msg:gsub(sender, player)
+
+		self:AddMessage(("%s %s"):format(timestamp, msg), r, g, b)
+	elseif event == "CHAT_MSG_LOOT" then
+		print(...)
+	elseif event:match("^CHAT_MSG_") then
+		local msg, sender, _, channel, _, _, _, chanID, chanName, _, _, guid = ...
+		local timestamp = date("|cffff8000[%H:%M:%S]|r")
+		local _, class, _, race, faction, name = GetPlayerInfoByGUID(guid)
+		local r, g, b = unpack(CHAT_COLORS[event])
+		local classColor = RAID_CLASS_COLORS[class] or { r = 0.5, g = 0.5, b = 0.5 }
+		local player = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(classColor.r*255, classColor.g*255, classColor.b*255, name or "Unknown", name or "Unknown")
+		local chan = channel or chanID or CHAT_CHANNEL[event]
 		local i = 1
 		local guildie = false
 		local gName, gRank, gLevel, gNote
-		
+
 		while GetGuildRosterInfo(i) ~= nil do
 			gName, gRank, _, gLevel, _, _, gNote = GetGuildRosterInfo(i)
 			
-			if gName == name then
+			if gName == (name or sender) then
 				guildie = true
 				break
 			end
@@ -206,17 +327,25 @@ local function OnEvent(self, event, ...)
 			i = i + 1
 		end
 
-		msg = ReplaceHardcoreIcon(msg)
+		local factionIcon = ("|TInterface\\PVPFrame\\PVP-Currency-%s:18:18|t"):format(faction == 2 and "Horde" or "Alliance")
+		if msg:match("^{003/") then
+			factionIcon = ("%s%s"):format("|TInterface\\CharacterFrame\\UI-Player-PlayTimeTired:18:18|t", factionIcon)
+			msg = msg:gsub("^{%?", "")
+		end
+
 		msg = ReplaceRaidIcons(msg)
+		msg = ReplaceEmojis(msg)
+
+		chan = "["..chan.."]"
 
 		if guildie then
 			if gNote and gNote ~= "" then
-				self:AddMessage(("%s%s[%s]%s[%s]:(%s) %s"):format(timestamp, chan, gLevel, player, gRank, gNote, msg), r, g, b)
+				self:AddMessage(("%s%s%s[%s]%s[%s]:(%s) %s"):format(timestamp, chan, factionIcon, gLevel, player, gRank, gNote, msg), r, g, b)
 			else
-				self:AddMessage(("%s%s[%s]%s[%s]: %s"):format(timestamp, chan, gLevel, player, gRank, msg), r, g, b)
+				self:AddMessage(("%s%s%s[%s]%s[%s]: %s"):format(timestamp, chan, factionIcon, gLevel, player, gRank, msg), r, g, b)
 			end
 		else
-			self:AddMessage(("%s%s%s: %s"):format(timestamp, chan, player, msg), r, g, b)
+			self:AddMessage(("%s%s%s%s: %s"):format(timestamp, chan, factionIcon, player, msg), r, g, b)
 		end
 	end
 end
