@@ -9,6 +9,15 @@ local edgeFile = "Interface\\Buttons\\WHITE8x8"
 local expandedHeight = GetScreenHeight() * 0.75
 local collapsedHeight = 217
 
+local CHAT_FILTER = {
+        "gold",
+        "cheap",
+        "wts",
+        "safe",
+        "usd",
+        "mmotradinghub"
+}
+
 local CHAT_COLORS = {
 	CHAT_MSG_SAY = { 1, 1, 1 },
 	CHAT_MSG_YELL = { 1, 0.25, 0.25 },
@@ -147,17 +156,19 @@ f:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 1, 20)
 f:SetSize(432, 200)
 
 local function ColorName(name, guid)
-    if not name then return "?" end
-    local _, class = GetPlayerInfoByGUID(guid)
-    if class and RAID_CLASS_COLORS[class] then
-        local c = RAID_CLASS_COLORS[class]
-        return string.format("|cff%02x%02x%02x%s|r",
-            c.r * 255, c.g * 255, c.b * 255, name)
-    end
-    return name
+	if not name then return "?" end
+
+	local _, class = GetPlayerInfoByGUID(guid)
+
+	if class and RAID_CLASS_COLORS[class] then
+		local c = RAID_CLASS_COLORS[class]
+
+		return string.format("|cff%02x%02x%02x%s|r", c.r * 255, c.g * 255, c.b * 255, name)
+	end
+
+	return name
 end
 
--- spell icon
 local function SpellIcon(spellID)
 	if not spellID then return "" end
 
@@ -166,19 +177,20 @@ local function SpellIcon(spellID)
 	return icon and ("|T"..icon..":14:14:0:0|t") or ""
 end
 
--- colored amount
 local function ColorAmount(amount, kind)
-    if not amount then return "" end
-    if kind == "DAMAGE" then
-        return string.format("|cffff3333%d|r", amount)   -- red
-    elseif kind == "HEAL" then
-        return string.format("|cff33ff33%d|r", amount)   -- green
-    elseif kind == "ABSORB" then
-        return string.format("|cffffff33%d|r", amount)   -- yellow
-    elseif kind == "BUFF" then
-        return string.format("|cff3399ff%d|r", amount)   -- blue
-    end
-    return tostring(amount)
+	if not amount then return "" end
+
+	if kind == "DAMAGE" then
+		return string.format("|cffff3333%d|r", amount)   -- red
+	elseif kind == "HEAL" then
+		return string.format("|cff33ff33%d|r", amount)   -- green
+	elseif kind == "ABSORB" then
+		return string.format("|cffffff33%d|r", amount)   -- yellow
+	elseif kind == "BUFF" then
+		return string.format("|cff3399ff%d|r", amount)   -- blue
+	end
+
+	return tostring(amount)
 end
 
 local function LogEvent(self, srcGUID, srcName, spellID, spellName, amount, dstGUID, dstName, kind)
@@ -194,109 +206,74 @@ local function LogEvent(self, srcGUID, srcName, spellID, spellName, amount, dstG
 end
 
 local function OnCombatEvent(self, ...)
-    local timestamp, subevent, srcGUID, srcName, _, dstGUID, dstName, _, spellID, spellName = ...
+	local timestamp, subevent, srcGUID, srcName, _, dstGUID, dstName, _, spellID, spellName = ...
+	local amount
 
-    local amount
+	if subevent == "SWING_DAMAGE" then
+		amount = select(9, ...)
 
-    -- =========================
-    -- DAMAGE
-    -- =========================
+		LogEvent(self, srcGUID, srcName, nil, "Melee", amount, dstGUID, dstName, "DAMAGE")
+	elseif subevent == "RANGE_DAMAGE" then
+		amount = select(12, ...)
 
-    if subevent == "SWING_DAMAGE" then
-        amount = select(9, ...)
-        LogEvent(self, srcGUID, srcName, nil, "Melee", amount, dstGUID, dstName, "DAMAGE")
+		LogEvent(self, srcGUID, srcName, spellID, spellName, amount, dstGUID, dstName, "DAMAGE")
+	elseif subevent == "SPELL_DAMAGE" then
+		amount = select(12, ...)
 
-    elseif subevent == "RANGE_DAMAGE" then
-        amount = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName, amount, dstGUID, dstName, "DAMAGE")
+		LogEvent(self, srcGUID, srcName, spellID, spellName, amount, dstGUID, dstName, "DAMAGE")
+	elseif subevent == "SPELL_PERIODIC_DAMAGE" then
+		amount = select(12, ...)
 
-    elseif subevent == "SPELL_DAMAGE" then
-        amount = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName, amount, dstGUID, dstName, "DAMAGE")
+		LogEvent(self, srcGUID, srcName, spellID, spellName.." (DoT)", amount, dstGUID, dstName, "DAMAGE")
+	elseif subevent == "DAMAGE_SHIELD" then
+		amount = select(12, ...)
 
-    elseif subevent == "SPELL_PERIODIC_DAMAGE" then
-        amount = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName.." (DoT)", amount, dstGUID, dstName, "DAMAGE")
+		LogEvent(self, srcGUID, srcName, spellID, spellName.." (Shield)", amount, dstGUID, dstName, "DAMAGE")
+	elseif subevent == "DAMAGE_SPLIT" then
+		amount = select(12, ...)
 
-    elseif subevent == "DAMAGE_SHIELD" then
-        amount = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName.." (Shield)", amount, dstGUID, dstName, "DAMAGE")
+		LogEvent(self, srcGUID, srcName, spellID, spellName.." (Split)", amount, dstGUID, dstName, "DAMAGE")
+	elseif subevent == "SPELL_HEAL" then
+		amount = select(12, ...)
 
-    elseif subevent == "DAMAGE_SPLIT" then
-        amount = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName.." (Split)", amount, dstGUID, dstName, "DAMAGE")
+		LogEvent(self, srcGUID, srcName, spellID, spellName, amount, dstGUID, dstName, "HEAL")
+	elseif subevent == "SPELL_PERIODIC_HEAL" then
+		amount = select(12, ...)
 
+		LogEvent(self, srcGUID, srcName, spellID, spellName.." (HoT)", amount, dstGUID, dstName, "HEAL")
+	elseif subevent == "SPELL_ABSORBED" then
+		local n = select("#", ...)
+		local absorbed = select(n, ...)
 
-    -- =========================
-    -- HEALING
-    -- =========================
+		LogEvent(self, srcGUID, srcName, spellID, spellName, absorbed, dstGUID, dstName, "ABSORB")
+	elseif subevent == "SPELL_AURA_APPLIED" then
+		LogEvent(self, srcGUID, srcName, spellID, spellName, nil, dstGUID, dstName, "BUFF")
+	elseif subevent == "SPELL_AURA_REFRESH" then
+		LogEvent(self, srcGUID, srcName, spellID, spellName.." (ref)", nil, dstGUID, dstName, "BUFF")
+	elseif subevent == "SPELL_AURA_REMOVED" then
+		LogEvent(self, srcGUID, srcName, spellID, spellName.." (fade)", nil, dstGUID, dstName, "BUFF")
+	elseif subevent == "SWING_MISSED" then
+		local missType = select(9, ...)
 
-    elseif subevent == "SPELL_HEAL" then
-        amount = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName, amount, dstGUID, dstName, "HEAL")
+		LogEvent(self, srcGUID, srcName, nil, missType, 0, dstGUID, dstName, "BUFF")
+	elseif subevent == "RANGE_MISSED" then
+		local missType = select(12, ...)
 
-    elseif subevent == "SPELL_PERIODIC_HEAL" then
-        amount = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName.." (HoT)", amount, dstGUID, dstName, "HEAL")
+		LogEvent(self, srcGUID, srcName, spellID, spellName.." ("..missType..")", 0, dstGUID, dstName, "BUFF")
+	elseif subevent == "SPELL_MISSED" then
+		local missType = select(12, ...)
 
+		LogEvent(self, srcGUID, srcName, spellID, spellName.." ("..missType..")", 0, dstGUID, dstName, "BUFF")
+	elseif subevent == "SPELL_PERIODIC_MISSED" then
+		local missType = select(12, ...)
 
-    -- =========================
-    -- ABSORBS
-    -- =========================
+		LogEvent(self, srcGUID, srcName, spellID, spellName.." ("..missType..")", 0, dstGUID, dstName, "BUFF")
+	elseif subevent == "ENVIRONMENTAL_DAMAGE" then
+		local envType = spellID
+		amount = select(10, ...)
 
-    elseif subevent == "SPELL_ABSORBED" then
-        -- WotLK has two formats:
-        -- 1) spellID present
-        -- 2) no spellID (swing)
-        local n = select("#", ...)
-        local absorbed = select(n, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName, absorbed, dstGUID, dstName, "ABSORB")
-
-
-    -- =========================
-    -- BUFFS / DEBUFFS
-    -- =========================
-
-    elseif subevent == "SPELL_AURA_APPLIED" then
-        LogEvent(self, srcGUID, srcName, spellID, spellName, nil, dstGUID, dstName, "BUFF")
-
-    elseif subevent == "SPELL_AURA_REFRESH" then
-        LogEvent(self, srcGUID, srcName, spellID, spellName.." (ref)", nil, dstGUID, dstName, "BUFF")
-
-    elseif subevent == "SPELL_AURA_REMOVED" then
-        LogEvent(self, srcGUID, srcName, spellID, spellName.." (fade)", nil, dstGUID, dstName, "BUFF")
-
-
-    -- =========================
-    -- MISSES
-    -- =========================
-
-    elseif subevent == "SWING_MISSED" then
-        local missType = select(9, ...)
-        LogEvent(self, srcGUID, srcName, nil, missType, 0, dstGUID, dstName, "BUFF")
-
-    elseif subevent == "RANGE_MISSED" then
-        local missType = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName.." ("..missType..")", 0, dstGUID, dstName, "BUFF")
-
-    elseif subevent == "SPELL_MISSED" then
-        local missType = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName.." ("..missType..")", 0, dstGUID, dstName, "BUFF")
-
-    elseif subevent == "SPELL_PERIODIC_MISSED" then
-        local missType = select(12, ...)
-        LogEvent(self, srcGUID, srcName, spellID, spellName.." ("..missType..")", 0, dstGUID, dstName, "BUFF")
-
-
-    -- =========================
-    -- ENVIRONMENTAL DAMAGE
-    -- =========================
-
-    elseif subevent == "ENVIRONMENTAL_DAMAGE" then
-        local envType = spellID -- Blizzard uses spellID field for type
-        amount = select(10, ...)
-        LogEvent(self, srcGUID, srcName, nil, envType, amount, dstGUID, dstName, "DAMAGE")
-    end
+		LogEvent(self, srcGUID, srcName, nil, envType, amount, dstGUID, dstName, "DAMAGE")
+	end
 end
 
 local function ReplaceRaidIcons(msg)
@@ -380,8 +357,6 @@ local function OnUpdate(self, elapsed)
 	if self.timer < 0.01 then return end
 	self.timer = 0
 
-	--if not ChatFrame1EditBox:IsShown() and ChatFrame1EditBox.bg:IsShown() then ChatFrame1EditBox.bg:Hide() end
-
 	if self.action == "shrink" and self:GetHeight() > collapsedHeight then
 		self:SetHeight(math.max(self:GetHeight() - 50, collapsedHeight))
 	elseif self.action == "grow" and self:GetHeight() < expandedHeight then
@@ -393,7 +368,6 @@ function f:PLAYER_LOGIN(self, ...)
 	local eb = ChatFrame1EditBox
 
 	if eb then
-		--eb:SetParent(f)
 		eb:SetParent(UIParent)
 		eb:SetFrameStrata("HIGH")
 		eb:SetFrameLevel(SteakChatFrame:GetFrameLevel()+2)
@@ -449,13 +423,22 @@ function f:PLAYER_LOGIN(self, ...)
 			frame:Hide()
 		end
 	end
-	
+
 	DEFAULT_CHAT_FRAME = f.windows[1]
 
 	HelpMicroButton:SetParent(f)
 	HelpMicroButton:ClearAllPoints()
 	HelpMicroButton:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -2, 2)
-	HelpMicroButton:SetScale(28/HelpMicroButton:GetHeight())
+	HelpMicroButton.scale = 28/HelpMicroButton:GetHeight()
+	HelpMicroButton:SetScale(HelpMicroButton.scale)
+end
+
+function f["PLAYER_ENTERING_WORLD"](self, ...)
+	HelpMicroButton:SetParent(f)
+	HelpMicroButton:ClearAllPoints()
+	HelpMicroButton:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -2, 2)
+	HelpMicroButton:SetScale(HelpMicroButton.scale)
+	HelpMicroButton:Show()
 end
 
 local function OnEvent(self, event, ...)
@@ -476,28 +459,6 @@ local function OnEvent(self, event, ...)
 		if destGUID and tonumber(destGUID:sub(1, 5), 16) == 0 then
 			local _, class, _, race, faction, name = GetPlayerInfoByGUID(destGUID)
 			local destPlayerLink = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(RAID_CLASS_COLORS[class].r*255, RAID_CLASS_COLORS[class].g*255, RAID_CLASS_COLORS[class].b*255, name, name)
-		end
-
-		if subEvent:match("_DAMAGE$") then
-			if subEvent:match("^SWING") then
-				local amount = select(9, ...)
-
-				self:AddMessage(("%s melee hit %s %s %s"):format(srcPlayerLink or srcName, destPlayerLink or destName, amount, critical and "(CRIT)" or ""))
-			else
-				local spellID, spellName, spellSchool, amount, _,_, _, _, _, critical = select(9, ...)
-
-				self:AddMessage(("%s %s hit %s %s %s"):format(srcPlayerLink or srcName, spellName, destPlayerLink or destName, amount, critical and "(CRIT)" or ""))
-			end
-		elseif subEvent:match("_HEAL$") then
-
-		elseif subEvent:match("_ABSORBED$") then
-
-		elseif subEvent:match("_MISSED$") then
-			if subEvent:match("^SWING") then
-
-			else
-
-			end
 		end
 		]]
 	elseif event == "CHAT_MSG_SYSTEM" then
@@ -523,6 +484,7 @@ local function OnEvent(self, event, ...)
 		local msg = ...
 		local name = msg:match("^(.-) receive")
 		local r, g, b = unpack(CHAT_COLORS[event])
+		name = not name and msg:match("^(.-) create") or name
 
 		if name == "You" then
 			local _, class = UnitClass("player")
@@ -537,7 +499,7 @@ local function OnEvent(self, event, ...)
 				local _, class = UnitClass(unit)
 
 				if UnitName(unit) == name then
-					msg = msg:gsub("^"..name, ("|cff%02x%02x%02x|Hplayer:%s|h[You]|h|r"):format(RAID_CLASS_COLORS[class].r*255, RAID_CLASS_COLORS[class].g*255, RAID_CLASS_COLORS[class].b*255, name))
+					msg = msg:gsub("^"..name, ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(RAID_CLASS_COLORS[class].r*255, RAID_CLASS_COLORS[class].g*255, RAID_CLASS_COLORS[class].b*255, name, name))
 					break
 				end
 			end
@@ -555,6 +517,15 @@ local function OnEvent(self, event, ...)
 		local i = 1
 		local guildie = false
 		local gName, gRank, gLevel, gNote
+		local score = 0
+
+		for _, keyword in ipairs(CHAT_FILTER) do
+			if msg:lower():find(keyword) then
+				score = score + 1
+			end
+		end
+
+		if score >= 3 then return end
 
 		while GetGuildRosterInfo(i) ~= nil do
 			gName, gRank, _, gLevel, _, _, gNote = GetGuildRosterInfo(i)
