@@ -433,7 +433,7 @@ function f:PLAYER_LOGIN(self, ...)
 	HelpMicroButton:SetScale(HelpMicroButton.scale)
 end
 
-function f["PLAYER_ENTERING_WORLD"](self, ...)
+function f:PLAYER_ENTERING_WORLD(self, ...)
 	HelpMicroButton:SetParent(f)
 	HelpMicroButton:ClearAllPoints()
 	HelpMicroButton:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -2, 2)
@@ -465,10 +465,9 @@ local function OnEvent(self, event, ...)
 		local msg, _, channel, sender, _, _, chanID, chanName, _, _, guid = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
 		local r, g, b = unpack(CHAT_COLORS[event])
-		local message = "%s%s %s"
 		local chan = channel or CHAT_CHANNEL[event]
 
-		self:AddMessage(message:format(timestamp, chan, msg), r, g, b)	
+		self:AddMessage(("%s%s %s"):format(timestamp, chan, msg), r, g, b)	
 	elseif event == "CHAT_MSG_EMOTE" or event == "CHAT_MSG_TEXT_EMOTE" then
 		local msg, sender, _, _, _, _, _, _, _, _, _, guid = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
@@ -482,6 +481,7 @@ local function OnEvent(self, event, ...)
 		self:AddMessage(("%s %s"):format(timestamp, msg), r, g, b)
 	elseif event == "CHAT_MSG_LOOT" then
 		local msg = ...
+		local timestamp = date("|cffff8000[%H:%M:%S]|r")
 		local name = msg:match("^(.-) receive")
 		local r, g, b = unpack(CHAT_COLORS[event])
 		name = not name and msg:match("^(.-) create") or name
@@ -505,7 +505,7 @@ local function OnEvent(self, event, ...)
 			end
 		end
 
-		self:AddMessage(msg, r, g, b)
+		self:AddMessage(("%s %s"):format(timestamp, msg), r, g, b)
 	elseif event:match("^CHAT_MSG_") then
 		local msg, sender, _, channel, _, _, _, chanID, chanName, _, _, guid = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
@@ -539,7 +539,7 @@ local function OnEvent(self, event, ...)
 		end
 
 		local factionIcon = ("|TInterface\\PVPFrame\\PVP-Currency-%s:18:18|t"):format(faction == 2 and "Horde" or "Alliance")
-		if msg:match("^{003/") then
+		if msg:match("^{%?") then
 			factionIcon = ("%s%s"):format("|TInterface\\CharacterFrame\\UI-Player-PlayTimeTired:18:18|t", factionIcon)
 			msg = msg:gsub("^{%?", "")
 		end
@@ -547,7 +547,7 @@ local function OnEvent(self, event, ...)
 		msg = ReplaceRaidIcons(msg)
 		msg = ReplaceEmojis(msg)
 
-		chan = "["..chan.."]"
+		chan = chan and chan ~= "" and "["..chan.."]" or ""
 
 		if guildie then
 			if gNote and gNote ~= "" then
@@ -567,6 +567,7 @@ f:SetScript("OnUpdate", OnUpdate)
 f:SetScript("OnEvent", OnEvent)
 
 f:RegisterEvent("PLAYER_LOGIN")
+f:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 f.windows = {}
 f.tabs = {}
@@ -586,6 +587,18 @@ local function CreateChatWindow(title, events)
 	cf:EnableMouse(true)
 
 	cf.editBox = ChatFrame1EditBox
+
+	cf.print = function(self, ...)
+		local params = {...}
+
+		for i, param in ipairs(params) do
+			if not param then
+				params[i] = "nil"
+			end
+		end
+
+		self:AddMessage(table.concat(params, ", "))
+	end
 
 	cf:SetPoint("TOPLEFT", f, "TOPLEFT", 6, -6)
 	cf:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -6, 20)
