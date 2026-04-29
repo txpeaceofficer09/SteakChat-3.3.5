@@ -474,7 +474,7 @@ local function OnEvent(self, event, ...)
 		local _, class, _, race, faction, name = GetPlayerInfoByGUID(guid)		
 		local r, g, b = unpack(CHAT_COLORS[event])
 		local classColor = RAID_CLASS_COLORS[class] or { r = 0.5, g = 0.5, b = 0.5 }
-		local player = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(classColor.r*255, classColor.g*255, classColor.b*255, name or "Unknown", name or "Unknown")
+		local player = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(classColor.r*255, classColor.g*255, classColor.b*255, name or sender, name or sender)
 
 		msg = msg:gsub(sender, player)
 
@@ -507,12 +507,18 @@ local function OnEvent(self, event, ...)
 
 		self:AddMessage(("%s %s"):format(timestamp, msg), r, g, b)
 	elseif event:match("^CHAT_MSG_") then
+		--print(...)
 		local msg, sender, _, channel, _, _, _, chanID, chanName, _, _, guid = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
-		local _, class, _, race, faction, name = GetPlayerInfoByGUID(guid)
+		local class, race, faction, name, player, classColor
+	
+		if guid then
+			_, class, _, race, faction, name = GetPlayerInfoByGUID(guid)
+			classColor = RAID_CLASS_COLORS[class] or { r = 0.5, g = 0.5, b = 0.5 }
+			player = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(classColor.r*255, classColor.g*255, classColor.b*255, name or sender, name or sender)
+		end
+
 		local r, g, b = unpack(CHAT_COLORS[event])
-		local classColor = RAID_CLASS_COLORS[class] or { r = 0.5, g = 0.5, b = 0.5 }
-		local player = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(classColor.r*255, classColor.g*255, classColor.b*255, name or "Unknown", name or "Unknown")
 		local chan = channel or chanID or CHAT_CHANNEL[event]
 		local i = 1
 		local guildie = false
@@ -540,7 +546,9 @@ local function OnEvent(self, event, ...)
 
 		local factionIcon = ("|TInterface\\PVPFrame\\PVP-Currency-%s:18:18|t"):format(faction == 2 and "Horde" or "Alliance")
 		if msg:match("^{%?") then
-			factionIcon = ("%s%s"):format("|TInterface\\CharacterFrame\\UI-Player-PlayTimeTired:18:18|t", factionIcon)
+			--factionIcon = ("%s%s"):format("|TInterface\\CharacterFrame\\UI-Player-PlayTimeTired:18:18|t", factionIcon)
+			--factionIcon = ("%s%s"):format("|TInterface\\AddOns\\SteakChat\\hardcore.tga:18:18|t", factionIcon)
+			factionIcon = ("%s%s"):format("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_8:14:14|t", factionIcon)
 			msg = msg:gsub("^{%?", "")
 		end
 
@@ -677,7 +685,9 @@ CreateChatWindow("General", {
 	"CHAT_MSG_CHANNEL_JOIN",
 	"CHAT_MSG_CHANNEL_LEAVE",
 	"CHAT_MSG_WHISPER",
-	"CHAT_MSG_WHISPER_INFORM"
+	"CHAT_MSG_WHISPER_INFORM",
+	"CHAT_MSG_SKILL",
+	"CHAT_MSG_LOOT"
 })
 
 CreateChatWindow("Guild", {
