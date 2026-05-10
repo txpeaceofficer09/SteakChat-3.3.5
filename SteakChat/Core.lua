@@ -44,7 +44,8 @@ local CHAT_COLORS = {
 	CHAT_MSG_CHANNEL_LEAVE = { 1, 0.75, 0.75 },
 	CHAT_MSG_BATTLEGROUND = { 1, 0.5, 0 },
 	CHAT_MSG_BATTLEGROUND_LEADER = { 1, 0.8, 0.7 },
-	CHAT_MSG_LOOT = { 0.5, 0.8, 1 }
+	CHAT_MSG_LOOT = { 0.5, 0.8, 1 },
+	CHAT_MSG_SKILL = { 0.25, 0.75, 1.0 }
 }
 
 local CHAT_CHANNEL = {
@@ -479,7 +480,7 @@ local function OnEvent(self, event, ...)
 		msg = msg:gsub(sender, player)
 
 		self:AddMessage(("%s %s"):format(timestamp, msg), r, g, b)
-	elseif event == "CHAT_MSG_LOOT" then
+	elseif event == "CHAT_MSG_LOOT" or event == "CHAT_MSG_SKILL" then
 		local msg = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
 		local name = msg:match("^(.-) receive")
@@ -507,18 +508,17 @@ local function OnEvent(self, event, ...)
 
 		self:AddMessage(("%s %s"):format(timestamp, msg), r, g, b)
 	elseif event:match("^CHAT_MSG_") then
-		--print(...)
 		local msg, sender, _, channel, _, _, _, chanID, chanName, _, _, guid = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
 		local class, race, faction, name, player, classColor
 	
-		if guid then
+		if guid and guid ~= "" then
 			_, class, _, race, faction, name = GetPlayerInfoByGUID(guid)
 			classColor = RAID_CLASS_COLORS[class] or { r = 0.5, g = 0.5, b = 0.5 }
 			player = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(classColor.r*255, classColor.g*255, classColor.b*255, name or sender, name or sender)
 		end
 
-		local r, g, b = unpack(CHAT_COLORS[event])
+		local r, g, b = unpack(CHAT_COLORS[event] or { 0.5, 0.5, 0.5 })
 		local chan = channel or chanID or CHAT_CHANNEL[event]
 		local i = 1
 		local guildie = false
@@ -681,12 +681,20 @@ CreateChatWindow("General", {
 	"CHAT_MSG_GUILD_ITEM_LOOTED",
 	"CHAT_MSG_SYSTEM",
 	"CHAT_MSG_EMOTE",
+	"CHAT_MSG_MONSTER_SAY",
+	"CHAT_MSG_MONSTER_YELL",
+	"CHAT_MSG_MONSTER_EMOTE",
+	"CHAT_MSG_MONSTER_WHISPER",
+	"CHAT_MSG_MONSTER_PARTY",
+	"CHAT_MSG_RAID_BOSS_EMOTE",
+	"CHAT_MSG_RAID_BOSS_WHISPER",
 	"CHAT_MSG_TEXT_EMOTE",
 	"CHAT_MSG_CHANNEL_JOIN",
 	"CHAT_MSG_CHANNEL_LEAVE",
 	"CHAT_MSG_WHISPER",
 	"CHAT_MSG_WHISPER_INFORM",
 	"CHAT_MSG_SKILL",
+	"CHAT_MSG_REPUTATION",
 	"CHAT_MSG_LOOT"
 })
 
