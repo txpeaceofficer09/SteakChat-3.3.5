@@ -507,6 +507,28 @@ local function OnEvent(self, event, ...)
 		end
 
 		self:AddMessage(("%s %s"):format(timestamp, msg), r, g, b)
+	elseif event:match("^CHAT_MSG_MONSTER_") or event:match("^CHAT_MSG_RAID_BOSS_") then
+		local msg, sender, _, channel, _, _, _, chanID, chanName = ...
+		local timestamp = date("|cffff8000[%H:%M:%S]|r")
+		local class, race, faction, name, player, classColor
+	
+		local r, g, b = unpack(CHAT_COLORS[event] or { 0.5, 0.5, 0.5 })
+		local chan = channel or chanID or CHAT_CHANNEL[event]
+
+		local factionIcon = ("|TInterface\\PVPFrame\\PVP-Currency-%s:18:18|t"):format(faction == 2 and "Horde" or "Alliance")
+		if msg:match("^{%?") then
+			--factionIcon = ("%s%s"):format("|TInterface\\CharacterFrame\\UI-Player-PlayTimeTired:18:18|t", factionIcon)
+			--factionIcon = ("%s%s"):format("|TInterface\\AddOns\\SteakChat\\hardcore.tga:18:18|t", factionIcon)
+			factionIcon = ("%s%s"):format("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_8:14:14|t", factionIcon)
+			msg = msg:gsub("^{%?", "")
+		end
+
+		msg = ReplaceRaidIcons(msg)
+		msg = ReplaceEmojis(msg)
+
+		chan = chan and chan ~= "" and "["..chan.."]" or ""
+
+		self:AddMessage(("%s%s%s%s: %s"):format(timestamp, chan, factionIcon, sender, msg), r, g, b)
 	elseif event:match("^CHAT_MSG_") then
 		local msg, sender, _, channel, _, _, _, chanID, chanName, _, _, guid = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
