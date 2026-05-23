@@ -388,14 +388,6 @@ function f:PLAYER_LOGIN(self, ...)
 
 		ChatFrame1EditBoxRight:SetPoint("RIGHT", ChatFrame1EditBox, "RIGHT", -10, 0)
 		ChatFrame1EditBoxRight:SetHeight(ChatFrame1EditBoxLeft:GetHeight())
-
-		eb:HookScript("OnShow", function(self)
-			print("eb shown")
-		end)
-
-		eb:HookScript("OnHide", function(self)
-			print("eb hidden")
-		end)
 	end
 
 	--ChatFrame1EditBoxLeft:Hide()
