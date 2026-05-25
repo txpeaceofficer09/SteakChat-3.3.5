@@ -472,6 +472,69 @@ local function OnEvent(self, event, ...)
 		msg = msg:gsub(sender, player)
 
 		self:AddMessage(("%s %s"):format(timestamp, msg), r, g, b)
+	elseif event == "CHAT_MSG_GUILD_ACHIEVEMENT" then
+		local msg, sender, _, channel, _, _, _, chanID, chanName, _, _, guid = ...
+		local timestamp = date("|cffff8000[%H:%M:%S]|r")
+		local class, race, faction, name, player, classColor
+	
+		if guid and guid ~= "" then
+			_, class, _, race, faction, name = GetPlayerInfoByGUID(guid)
+			classColor = RAID_CLASS_COLORS[class] or { r = 0.5, g = 0.5, b = 0.5 }
+			player = ("|cff%02x%02x%02x|Hplayer:%s|h[%s]|h|r"):format(classColor.r*255, classColor.g*255, classColor.b*255, name or sender, name or sender)
+		end
+
+		local r, g, b = unpack(CHAT_COLORS[event] or { 0.5, 0.5, 0.5 })
+		local chan = channel or chanID or CHAT_CHANNEL[event]
+		local i = 1
+		local guildie = false
+		local gName, gRank, gLevel, gNote
+		local score = 0
+
+		for _, keyword in ipairs(CHAT_FILTER) do
+			if msg:lower():find(keyword) then
+				score = score + 1
+			end
+		end
+
+		if score >= 3 then return end
+
+		while GetGuildRosterInfo(i) ~= nil do
+			gName, gRank, _, gLevel, _, _, gNote = GetGuildRosterInfo(i)
+			
+			if gName == (name or sender) then
+				guildie = true
+				break
+			end
+			
+			i = i + 1
+		end
+
+		local factionIcon = ("|TInterface\\PVPFrame\\PVP-Currency-%s:18:18|t"):format(faction == 2 and "Horde" or "Alliance")
+		if msg:match("^{%?") then
+			--factionIcon = ("%s%s"):format("|TInterface\\CharacterFrame\\UI-Player-PlayTimeTired:18:18|t", factionIcon)
+			--factionIcon = ("%s%s"):format("|TInterface\\AddOns\\SteakChat\\hardcore.tga:18:18|t", factionIcon)
+			factionIcon = ("%s%s"):format("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_8:14:14|t", factionIcon)
+			msg = msg:gsub("^{%?", "")
+		end
+
+		if msg:match("^%%s ") then
+			msg = msg:gsub("^%%s ", "")
+		end
+
+		msg = ReplaceRaidIcons(msg)
+		msg = ReplaceEmojis(msg)
+
+		chan = chan and chan ~= "" and "["..chan.."]" or ""
+
+		if guildie then
+			if gNote and gNote ~= "" then
+				self:AddMessage(("%s%s%s[%s]%s[%s]:(%s) %s"):format(timestamp, chan, factionIcon, gLevel, player, gRank, gNote, msg), r, g, b)
+			else
+				self:AddMessage(("%s%s%s[%s]%s[%s]: %s"):format(timestamp, chan, factionIcon, gLevel, player, gRank, msg), r, g, b)
+			end
+		else
+			self:AddMessage(("%s%s%s%s: %s"):format(timestamp, chan, factionIcon, player, msg), r, g, b)
+		end
 	elseif event == "CHAT_MSG_LOOT" or event == "CHAT_MSG_SKILL" then
 		local msg = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
