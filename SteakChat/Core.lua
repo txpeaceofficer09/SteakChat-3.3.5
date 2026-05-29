@@ -435,6 +435,18 @@ function f:PLAYER_ENTERING_WORLD(self, ...)
 end
 
 local function OnEvent(self, event, ...)
+	if event:match("^CHAT_MSG_WHISPER") then
+		local author = select(2, ...)
+
+		auto = author:match("([^%-]+)")
+		lastWhisper = author
+
+		if ChatEdit_SetLastTellTarget then
+			--ChatEdit_SetLastTellTarget(self.editBox, author)
+			ChatEdit_SetLastTellTarget(author)
+		end
+	end
+
 	if self[event] then
 		self[event](self, event, ...)
 	elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
