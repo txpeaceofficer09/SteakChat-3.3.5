@@ -23,6 +23,7 @@ local CHAT_COLORS = {
 	CHAT_MSG_YELL = { 1, 0.25, 0.25 },
 	CHAT_MSG_GUILD = { 0.25, 1, 0.25 },
 	CHAT_MSG_GUILD_ACHIEVEMENT = { 1, 1, 0 },
+	CHAT_MSG_ACHIEVEMENT = { 1, 1, 0 },
 	CHAT_MSG_OFFICER = { 0.25, 0.73, 0.25 },
 	CHAT_MSG_PARTY = { 0.6, 0.6, 1 },
 	CHAT_MSG_PARTY_LEADER = { 0.4, 0.4, 0.8 },
@@ -53,6 +54,7 @@ local CHAT_CHANNEL = {
 	CHAT_MSG_YELL = "[Y]",
 	CHAT_MSG_GUILD = "[G]",
 	CHAT_MSG_GUILD_ACHIEVEMENT = "[GA]",
+	CHAT_MSG_ACHIEVEMENT = "[A]",
 	CHAT_MSG_OFFICER = "[GO]",
 	CHAT_MSG_CHANNEL = "[C]",
 	CHAT_MSG_PARTY = "[P]",
@@ -484,7 +486,7 @@ local function OnEvent(self, event, ...)
 		msg = msg:gsub(sender, player)
 
 		self:AddMessage(("%s %s"):format(timestamp, msg), r, g, b)
-	elseif event == "CHAT_MSG_GUILD_ACHIEVEMENT" then
+	elseif event == "CHAT_MSG_GUILD_ACHIEVEMENT" or event == "CHAT_MSG_ACHIEVEMENT" then
 		local msg, sender, _, channel, _, _, _, chanID, chanName, _, _, guid = ...
 		local timestamp = date("|cffff8000[%H:%M:%S]|r")
 		local class, race, faction, name, player, classColor
@@ -766,6 +768,7 @@ CreateChatWindow("General", {
 	"CHAT_MSG_BATTLEGROUND_LEADER",
 	"CHAT_MSG_GUILD",
 	"CHAT_MSG_GUILD_ACHIEVEMENT",
+	"CHAT_MSG_ACHIEVEMENT",
 	"CHAT_MSG_OFFICER",
 	"CHAT_MSG_GUILD_ITEM_LOOTED",
 	"CHAT_MSG_SYSTEM",
